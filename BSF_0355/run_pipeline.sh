@@ -11,7 +11,7 @@ LOGFILE=pipeline.log
 
 # go through all bam files to create fastqs
 for i in BSF_0355*_S_[1-9]*.bam ; do
-  echo at `date`:
+  echo at `date`:  >> $LOGFILE
   echo bash ${SCRIPTS}/bsf0355_preprocess.sh $i FASTQ >> $LOGFILE
   bash ${SCRIPTS}/bsf0355_preprocess.sh $i FASTQ
   ES=$?

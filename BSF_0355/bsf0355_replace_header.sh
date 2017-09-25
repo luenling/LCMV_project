@@ -1,8 +1,8 @@
 #!/bin/bash
 #----------
 # author: Lukas Endler
-# created: 2016-12-19 10:34:11
-# Time-stamp: <2017-01-25 14:39:03 lukasendler>
+# created: 9/25/2017, 2:34:27 PM
+# Time-stamp: 9/25/2017, 2:34:37 PM lukasendler>
 # takes a bam file, reheaders it to only the two viral segments in short format
 #--------------
 BASEDIR=/Volumes/Temp/Lukas/LCMV_project
@@ -22,6 +22,9 @@ $SAMTOOLS reheader <($SAMTOOLS view -H $1 | grep -Ev '^@SQ.*SN:[^g]' | sed 's/gi
 ES=$?
 echo finished reheader at `date` with exit state $ES >> $LOGFILE
 [ $ES -eq 0 ] || exit $ES
+
+echo rm -f $1 >> $LOGFILE
+rm -f $1  2>> $ERRORLOG
 
 $SAMTOOLS index ${FN}_rh.bam
 echo flagstat ${FN}_rh.bam >> $LOGFILE

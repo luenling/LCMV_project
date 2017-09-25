@@ -32,6 +32,7 @@ RG=$(echo $FN | perl -ne 'chomp; $a = $_; if ($a=~/BSF_(\d+)_([^_]+)_(\d+)_S_(\d
 [ $RG eq "" ] && exit 1 "$FN not of the format BSF_##__HL##_#_S_#_"
 # new filename from now on run and samplename
 FN=$(echo $FN | perl -ne 'chomp; $a = $_; if ($a=~/BSF_(\d+)_([^_]+)_(\d+)_S_(\d+)_/) { $SM=sprintf("S%02d",$4);print "BSF_$1_$SM"} else {print"$a"}')
+FN=${OUTDIR}/$FN
 LOGFILE=${FN}.log
 ERRORLOG=${FN}.err.log
 echo "start bwa mem  at" `date` >> $LOGFILE
