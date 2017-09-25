@@ -10,20 +10,20 @@ SCRIPTS=$BASEDIR/LCMV_project/BSF_0355/
 LOGFILE=pipeline.log
 
 # go through all bam files to create fastqs
-for i in BSF_0355*_S_[1-9]*.bam ; do
-  echo at `date`:  >> $LOGFILE
-  echo bash ${SCRIPTS}/bsf0355_preprocess.sh $i FASTQ >> $LOGFILE
-  bash ${SCRIPTS}/bsf0355_preprocess.sh $i FASTQ
-  ES=$?
-  echo finished at `date` with exit state $ES >> $LOGFILE
-  [ $ES -eq 0 ] || exit $ES
-done
+# for i in BSF_0355*_S_[1-9]*.bam ; do
+#   echo at `date`:  >> $LOGFILE
+#   echo bash ${SCRIPTS}/bsf0355_preprocess.sh $i FASTQ >> $LOGFILE
+#   bash ${SCRIPTS}/bsf0355_preprocess.sh $i FASTQ
+#   ES=$?
+#   echo finished at `date` with exit state $ES >> $LOGFILE
+#   [ $ES -eq 0 ] || exit $ES
+# done
 # map to mouse and extract viruses
 
 for i in FASTQ/BSF*_npa_1.fq.gz ; do
   echo at `date`:
   echo bash ${SCRIPTS}/bsf0355_run_mm10.sh $i MAPPING >> $LOGFILE
-  bash ${SCRIPTS}/bsf0355_run_mm10.sh.sh $i MAPPING
+  bash ${SCRIPTS}/bsf0355_run_mm10.sh $i MAPPING
   ES=$?
   echo finished at `date` with exit state $ES >> $LOGFILE
   [ $ES -eq 0 ] || exit $ES
