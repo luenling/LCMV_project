@@ -2,9 +2,9 @@
 #----------
 # author: Lukas Endler
 # date: 2017-09-24T21:35:14.964+02:00
-# Time-stamp: 2017-09-24T21:36:17.228+02:00 Lukas Endler
-# takes two fastq files runs bwa with 12 threads and outputs a bam file called like the fastq prefix
-# call with bash command blub_1.fq blub_2.fq >> logfile.log 2>> log.error.log
+# Time-stamp: 9/25/2017, 11:22:27 AM Lukas Endler
+# takes one fastq file and an outdir name (def. MAPPING), derives second filename runs bwa with 12 threads and outputs a bam file called like the fastq run and sample ID.
+# call with bash command blub_1.fq outdir >> logfile.log 2>> log.error.log
 # sort the file afterwards
 #--------------
 
@@ -14,6 +14,13 @@ REFGENOME=$BASEDIR/References/viruses_Mus_musculus.GRCm38.fa.gz
 PICARD=/usr/local/Cellar/picard-tools/2.5.0/share/java/picard.jar
 SAMTOOLS=/usr/local/bin/samtools
 BWA=/usr/local//Cellar/bwa/0.7.15/bin/bwa
+
+OUTDIR='MAPPING/'
+if [ $2 ]; then
+    OUTDIR=$2'/'
+    if [ ! -d $2 ]; then mkdir $2 ; fi
+fi
+
 
 FN=`basename $1 .gz`
 FN=`basename $FN _1.fq`
@@ -48,3 +55,28 @@ $SAMTOOLS flagstat ${FN}_sorted_viral.bam >> $LOGFILE
 echo idxstats >> $LOGFILE
 $SAMTOOLS idxstats ${FN}_sorted_viral.bam >> $LOGFILE
 } &
+
+# reheader
+
+REFGENOME=$BASEDIR/References/viruses_short.fasta
+FN=${FN}_sorted_viral
+
+LOGFILE=${FN}.log
+ERRORLOG=${FN}.err.log
+
+echo reheader $FN at `date` >> $LOGFILE
+echo $SAMTOOLS reheader \<\($SAMTOOLS view -H ${FN}.bam \| grep -Ev \''^@SQ.*SN:[^g]'\' \| sed \''s/gi|86440167|gb|DQ361066.1|/L/; s/gi|116563461|gb|DQ361065.2|/S/'\'\) ${FN}.bam \> ${FN}_rh.bam >> $LOGFILE
+$SAMTOOLS reheader <($SAMTOOLS view -H ${FN}.bam | grep -Ev '^@SQ.*SN:[^g]' | sed 's/gi|86440167|gb|DQ361066.1|/L/; s/gi|116563461|gb|DQ361065.2|/S/') ${FN}.bam > ${FN}_rh.bam 2>> $ERRORLOG
+ES=$?
+echo finished reheader at `date` with exit state $ES >> $LOGFILE
+[ $ES -eq 0 ] || exit $ES
+
+echo rm -f ${FN}.bam >> $LOGFILE
+rm -f ${FN}.bam  2>> $ERRORLOG
+
+$SAMTOOLS index ${FN}_rh.bam
+echo flagstat ${FN}_rh.bam >> $LOGFILE
+$SAMTOOLS flagstat ${FN}_rh.bam >> $LOGFILE
+echo idxstats ${FN}_rh.bam >> $LOGFILE
+$SAMTOOLS idxstats ${FN}_rh.bam >> $LOGFILE
+sam-stats ${FN}_rh.bam > ${FN}_rh.stats

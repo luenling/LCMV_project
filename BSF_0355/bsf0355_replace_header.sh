@@ -3,7 +3,7 @@
 # author: Lukas Endler
 # created: 2016-12-19 10:34:11
 # Time-stamp: <2017-01-25 14:39:03 lukasendler>
-# takes a bam file, reheaders it to only the two viral segments in short format 
+# takes a bam file, reheaders it to only the two viral segments in short format
 #--------------
 BASEDIR=/Volumes/Temp/Lukas/LCMV_project
 REFGENOME=$BASEDIR/References/viruses_short.fasta
@@ -30,9 +30,6 @@ echo idxstats ${FN}_rh.bam >> $LOGFILE
 $SAMTOOLS idxstats ${FN}_rh.bam >> $LOGFILE
 sam-stats ${FN}_rh.bam > ${FN}_rh.stats
 
+
 #echo creating coverages at `date` >> $LOGFILE
 #if [ ! -d Coverages ]; then mkdir Coverages ; fi
-
-
-
-
