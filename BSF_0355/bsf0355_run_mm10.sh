@@ -29,7 +29,7 @@ FN=`basename $FN _1.fastq`
 R2=`echo $1 | sed 's/_1\.f/_2.f/'`
 # create read group string out of filename
 RG=$(echo $FN | perl -ne 'chomp; $a = $_; if ($a=~/BSF_(\d+)_([^_]+)_(\d+)_S_(\d+)_/) { $SM=sprintf("S%02d",$4);print "\@RG\\tID:$a\\tLB:BSF_$1_$SM\\tSM:$SM\\tPL:illumina\\tPU:$2.$3"} else {print""}')
-[ $RG eq "" ] && exit 1 "$FN not of the format BSF_##__HL##_#_S_#_"
+[ $RG == "" ] && exit 1 "$FN not of the format BSF_##__HL##_#_S_#_"
 # new filename from now on run and samplename
 FN=$(echo $FN | perl -ne 'chomp; $a = $_; if ($a=~/BSF_(\d+)_([^_]+)_(\d+)_S_(\d+)_/) { $SM=sprintf("S%02d",$4);print "BSF_$1_$SM"} else {print"$a"}')
 FN=${OUTDIR}/$FN
