@@ -42,12 +42,12 @@ $BWA mem -R $RG  -k 17 -r 1.25 -M -t 17 $REFGENOME $1 $R2 2>> $ERRORLOG | $SAMTO
 ES=$?
 echo finished bwa mem mapping at `date` with exit state $ES >> $LOGFILE
 [ $ES -eq 0 ] || exit $ES
-{
 $SAMTOOLS index ${FN}_sorted.bam
-echo flagstat >> $LOGFILE
+ { echo flagstat >> $LOGFILE
 $SAMTOOLS flagstat ${FN}_sorted.bam >> $LOGFILE
 echo idxstats >> $LOGFILE
 $SAMTOOLS idxstats ${FN}_sorted.bam >> $LOGFILE
+} & 
 # extract only the viral genomes
 $SAMTOOLS view -bh -f 2 -F 256 ${FN}_sorted.bam 'gi|86440167|gb|DQ361066.1|' 'gi|116563461|gb|DQ361065.2|' > ${FN}_sorted_viral.bam
 $SAMTOOLS index ${FN}_sorted_viral.bam
@@ -55,7 +55,7 @@ echo flagstat >> $LOGFILE
 $SAMTOOLS flagstat ${FN}_sorted_viral.bam >> $LOGFILE
 echo idxstats >> $LOGFILE
 $SAMTOOLS idxstats ${FN}_sorted_viral.bam >> $LOGFILE
-} &
+
 
 # reheader
 
