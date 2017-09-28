@@ -34,7 +34,7 @@ RUN_ID=0355
 # get coverages
 echo at `date`: >> $LOGFILE
 echo get coverage data >> $LOGFILE
-mkdir -P MAPPING/Coverages
+mkdir -p MAPPING/Coverages
 cd MAPPING/Coverages
 ES=$?
 echo finished at `date` with exit state $ES >> $RUNBASE/$LOGFILE
