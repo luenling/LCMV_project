@@ -38,16 +38,19 @@ s.plot = split(samples, floor((rank(samples)-1)/n))
 
 for (i in seq(1,length(s.plot))) {
   bpL = ggplot(data=l.covs.50bp.melted[l.covs.50bp.melted$sample %in% s.plot[[i]],], aes(x=BPS, y=coverage, group = sample, linetype=sample, colour = sample)) +
-    geom_line() + scale_y_log10() + scale_linetype_manual(values = c(rep("dashed", 5), rep("solid", 5))) +
+    geom_line() + scale_y_log10(breaks=c(10,50,100,250,500,1000,5000,10000,100000,500000)) + scale_linetype_manual(values = c(rep("dashed", 5), rep("solid", 5))) +
     scale_color_manual(values = c("black",brewer.pal(9, "Set1"))) + theme_bw() + 
     guides(linetype=guide_legend(ncol =2)) + ggtitle("L Segment") 
   bpL + ggsave(paste0(outdir,"lsegment_",i,".pdf"),width=8,height=6)
   bpS = ggplot(data=s.covs.50bp.melted[s.covs.50bp.melted$sample %in% s.plot[[i]],], aes(x=BPS, y=coverage, group = sample, linetype=sample, colour = sample)) +
-    geom_line() + scale_y_log10() + scale_linetype_manual(values = c(rep("solid", 5), rep("dashed", 5))) +
+    geom_line() + scale_y_log10(breaks=c(10,50,100,250,500,1000,5000,10000,100000,500000)) + scale_linetype_manual(values = c(rep("solid", 5), rep("dashed", 5))) +
     scale_color_manual(values = c("black",brewer.pal(9, "Set1"))) + theme_bw() + 
     guides(linetype=guide_legend(ncol=2)) + ggtitle("S Segment") + ggsave("ssegment_low_covs.pdf",width=8,height=6)
   bpS + ggsave(paste0(outdir,"ssegment_",i,".pdf"),width=8,height=6)
 }
 
-
-
+q("no")
+# get samples greater than 50K
+l.covs.50bp.melted$sample[l.covs.50bp.melted$coverage > 50000]
+unique(s.covs.50bp.melted$sample[s.covs.50bp.melted$coverage > 50000])
+S31 S37 S38 S39

@@ -10,6 +10,8 @@ SCRIPTS=$BASEDIR/LCMV_project/BSF_0355/
 LOGFILE=pipeline.log
 RUNBASE=$BASEDIR/Run_0355
 RUN_ID=0355
+REFGENOME=$BASEDIR/References/viruses_short.fasta
+SAMTOOLS=/usr/local/bin/samtools
 
 # go through all bam files to create fastqs
 # for i in BSF_0355*_S_[1-9]*.bam ; do
@@ -58,7 +60,21 @@ echo finished at `date` with exit state $ES >> $RUNBASE/$LOGFILE
 [ $ES -eq 0 ] || exit $ES
 cd $RUNBASE
 
+#Downsample to max cov 50K,not really necessary I guess
+# mkdir -p $RUNBASE/MAPPINGS/MaxCov50K
+# for i in ../*S3[1789]*_rh.bam; do
+#   python ${SCRIPTS}/downsample_to_cov.py -b $i -c 50000;
+#   samtools index `basename $i .bam`_max_cov_50K.bam;
+# done
 
+ls $RUNBASE/MAPPING/*_rh.bam > bam_list.txt
+echo $SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 10000000 -u -B -o  all_samps_samtools.vcf -b  bam_list.txt >> $LOGFILE
+
+$SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 10000000 -u -B -o  all_samps_samtools.vcf -b  bam_list.txt
+
+mkdir -p $RUNBASE/LOFREQ2
+cd LORFREQ2
+bash $SCRIPTS/do_full_lofreq.sh 
 
 exit 0
 
