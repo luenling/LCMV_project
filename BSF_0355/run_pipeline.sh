@@ -33,32 +33,32 @@ SAMTOOLS=/usr/local/bin/samtools
 #   [ $ES -eq 0 ] || exit $ES
 # done
 
-# get coverages
-echo at `date`: >> $LOGFILE
-echo get coverage data >> $LOGFILE
-mkdir -p MAPPING/Coverages
-cd MAPPING/Coverages
-ES=$?
-echo finished at `date` with exit state $ES >> $RUNBASE/$LOGFILE
-[ $ES -eq 0 ] || exit $ES
-ls ../*viral_rh.bam | xargs -L 1 -P 5 -I{} bash -c "genomeCoverageBed -d -ibam '{}'  > `basename '{}'`.coverage"
-ES=$?
-echo finished at `date` with exit state $ES >> $RUNBASE/$LOGFILE
-[ $ES -eq 0 ] || exit $ES
-
-for i in *viral_rh.bam.coverage; do
-  A=${i/_sorted*};
-  A=${A#*${RUN_ID}_};
-  echo $A | cat - <(cut -f 3 $i) | paste  bsf_${RUN_ID}_all.coverages - > temp;
-  mv -f temp bsf_${RUN_ID}_all.coverages;
-done
-
-# create coverage diagrams
-Rscript $SCRIPTS/coverage_diagrams.R bsf_${RUN_ID}_all.coverages
-ES=$?
-echo finished at `date` with exit state $ES >> $RUNBASE/$LOGFILE
-[ $ES -eq 0 ] || exit $ES
-cd $RUNBASE
+# # get coverages
+# echo at `date`: >> $LOGFILE
+# echo get coverage data >> $LOGFILE
+# mkdir -p MAPPING/Coverages
+# cd MAPPING/Coverages
+# ES=$?
+# echo finished at `date` with exit state $ES >> $RUNBASE/$LOGFILE
+# [ $ES -eq 0 ] || exit $ES
+# ls ../*viral_rh.bam | xargs -L 1 -P 5 -I{} bash -c "genomeCoverageBed -d -ibam '{}'  > `basename '{}'`.coverage"
+# ES=$?
+# echo finished at `date` with exit state $ES >> $RUNBASE/$LOGFILE
+# [ $ES -eq 0 ] || exit $ES
+#
+# for i in *viral_rh.bam.coverage; do
+#   A=${i/_sorted*};
+#   A=${A#*${RUN_ID}_};
+#   echo $A | cat - <(cut -f 3 $i) | paste  bsf_${RUN_ID}_all.coverages - > temp;
+#   mv -f temp bsf_${RUN_ID}_all.coverages;
+# done
+#
+# # create coverage diagrams
+# Rscript $SCRIPTS/coverage_diagrams.R bsf_${RUN_ID}_all.coverages
+# ES=$?
+# echo finished at `date` with exit state $ES >> $RUNBASE/$LOGFILE
+# [ $ES -eq 0 ] || exit $ES
+# cd $RUNBASE
 
 #Downsample to max cov 50K,not really necessary I guess
 # mkdir -p $RUNBASE/MAPPINGS/MaxCov50K
@@ -67,14 +67,14 @@ cd $RUNBASE
 #   samtools index `basename $i .bam`_max_cov_50K.bam;
 # done
 
-ls $RUNBASE/MAPPING/*_rh.bam > bam_list.txt
-echo $SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 10000000 -u -B -o  all_samps_samtools.vcf -b  bam_list.txt >> $LOGFILE
+#ls $RUNBASE/MAPPING/*_rh.bam > bam_list.txt
+#echo $SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 10000000 -u -B -o  all_samps_samtools.vcf -b  bam_list.txt >> $LOGFILE
+#$SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 10000000 -u -B -o  all_samps_samtools.vcf -b  bam_list.txt
 
-$SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 10000000 -u -B -o  all_samps_samtools.vcf -b  bam_list.txt
-
+# Do lofreq 2 calling
 mkdir -p $RUNBASE/LOFREQ2
-cd LORFREQ2
-bash $SCRIPTS/do_full_lofreq.sh 
+cd LOFREQ2
+bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf
 
 exit 0
 
