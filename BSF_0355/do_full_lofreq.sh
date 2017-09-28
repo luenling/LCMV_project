@@ -16,9 +16,13 @@ ERRORLOG=${FN}.err.log
 
 # do call lofreq
 while read file; do
+  echo at `date`: >> $LOGFILE
+    echo  bash $SCRIPTS/call_lofreq.sh $file >> $LOGFILE
     bash $SCRIPTS/call_lofreq.sh $file
 done < $1
-
+echo at `date`: >> $LOGFILE
+echo  bash $SCRIPTS/combine_lofreq_vars.sh >> $LOGFILE
 bash $SCRIPTS/combine_lofreq_vars.sh
-
+echo at `date`: >> $LOGFILE
+echo bash $SCRIPTS/call_lofreq_withbed.sh ./all_samp_bcf.bed $2 >> $LOGFILE
 bash $SCRIPTS/call_lofreq_withbed.sh ./all_samp_bcf.bed $2
