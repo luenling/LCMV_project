@@ -17,12 +17,12 @@ ERRORLOG=${FN}.err.log
 INF=$1
 if [[ $1 != *IDSQ.bam ]]; then
     echo at `date`  >> $LOGFILE
-    echo  $LOFREQ viterbi -f $REFGENOME $1 \| samtools sort -T ${FN}_temp - \> ${FN}_real_viterbi.bam >> $LOGFILE
-    $LOFREQ viterbi -f $REFGENOME $1 | samtools sort -T ${FN}_temp - > ${FN}_real_viterbi.bam
+    echo  $LOFREQ viterbi -f $REFGENOME $1 \| $SAMTOOLS sort -T ${FN}_temp - \> ${FN}_real_viterbi.bam >> $LOGFILE
+    $LOFREQ viterbi -f $REFGENOME $1 | $SAMTOOLS sort -T ${FN}_temp - > ${FN}_real_viterbi.bam
     echo $LOFREQ indelqual --dindel -f $REFGENOME -o ${FN}_real_viterbi_IDQS.bam ${FN}_real_viterbi.bam  >> $LOGFILE
     $LOFREQ indelqual --dindel -f $REFGENOME -o ${FN}_real_viterbi_IDQS.bam ${FN}_real_viterbi.bam
     rm -f ${FN}_real_viterbi.bam
-    samtools index ${FN}_real_viterbi_IDQS.bam
+    $SAMTOOLS index ${FN}_real_viterbi_IDQS.bam
     INF=${FN}_real_viterbi_IDQS.bam
 fi
 
