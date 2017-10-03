@@ -68,8 +68,9 @@ SAMTOOLS=/usr/local/bin/samtools
 # done
 
 #ls $RUNBASE/MAPPING/*_rh.bam > bam_list.txt
-#echo $SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 10000000 -u -B -o  all_samps_samtools.vcf -b  bam_list.txt >> $LOGFILE
-#$SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 10000000 -u -B -o  all_samps_samtools.vcf -b  bam_list.txt
+#echo $SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 100000000 -u -k DP,AD,ADF,ADR,SP -o  all_samps_samtools.vcf -b  bam_list.txt >> $LOGFILE
+#$SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 100000000 -u -k DP,AD,ADF,ADR,SP -o  all_samps_samtools.vcf -b  bam_list.txt
+#bgzip all_samps_samtools.vcf ; tabix -p vcf all_samps_samtools.vcf.gz
 
 # Do lofreq 2 calling
 mkdir -p $RUNBASE/LOFREQ2

@@ -49,8 +49,7 @@ $BCFTOOLS norm -f $REFGENOME -m+any  all_samp_bed.vcf >  lofreq2_all_samp_bed_no
 
 
 
-for i in 0.1 0.05 0.001 ;
-do
+for i in 0.1 0.05 0.001 ; do
   LFVCF=lofreq2_all_samp_bed_norm_${i}.vcf
   $BCFTOOLS view -i "AF>$i" all_samp_bed.vcf | $BCFTOOLS norm -f $REFGENOME -m+any - > $LFVCF
   FN=`basename $LFVCF .vcf`
@@ -74,8 +73,7 @@ do
   paste ${FN}.afs.tab <(cut -f5- ${FN}.dp.tab) <(cut -f5- ${FN}.pq.tab) >  ${FN}.afs.dp.pq.tab
   python ${BASEDIR}/Scripts/get_positions_from_sync.py -a ${FN}.afs.dp.pq.tab -b ${FN}_snpeff.tab --both | cat <(head -1  ${FN}.afs.dp.pq.tab )  -  >  ${FN}.afs.anno.tab ;
 done
-for i in 0.1 0.05 0.001 ;
-do
+for i in 0.1 0.05 0.001 ; do
   LFVCF=lofreq2_all_samp_bed_norm_${i}.vcf
   FN=`basename $LFVCF .vcf`
   LOGFILE=${FN}.log
@@ -85,8 +83,7 @@ do
 
 done
 
-for i in 0.1 0.05 0.001 ;
-do
+for i in 0.1 0.05 0.001 ; do
   LFVCF=lofreq2_all_samp_bed_norm_${i}.vcf
   FN=`basename $LFVCF .vcf`
   LOGFILE=${FN}.log
