@@ -103,7 +103,7 @@ GATK=$BASEDIR/Tools/GenomeAnalysisTK_3.5.0.jar
 # done < bam.list
 
 cd $RUNBASE/BQSR
-ls "*.bam" > bam.list
+ls "*.bam" > bam_list.txt
 bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf.gz
 
 exit 0

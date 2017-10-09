@@ -15,7 +15,7 @@ FN=${FN/_sorted*/}
 LOGFILE=${FN}.log
 ERRORLOG=${FN}.err.log
 INF=$1
-if [[ $1 != *IDSQ*.bam ]]; then
+if [[ $1 != *IDQS*.bam ]]; then
     echo at `date`  >> $LOGFILE
     echo  $LOFREQ viterbi -f $REFGENOME $1 \| $SAMTOOLS sort -T ${FN}_temp - \> ${FN}_real_viterbi.bam >> $LOGFILE
     $LOFREQ viterbi -f $REFGENOME $1 | $SAMTOOLS sort -T ${FN}_temp - > ${FN}_real_viterbi.bam
