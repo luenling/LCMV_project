@@ -81,31 +81,30 @@ GATK=$BASEDIR/Tools/GenomeAnalysisTK_3.5.0.jar
 # bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf.gz
 
 
-echo mkdir -p $RUNBASE/BQSR >> $LOGFILE
-mkdir -p $RUNBASE/BQSR
-echo cd $RUNBASE/BQSR >> $LOGFILE
+# echo mkdir -p $RUNBASE/BQSR >> $LOGFILE
+# mkdir -p $RUNBASE/BQSR
+# echo cd $RUNBASE/BQSR >> $LOGFILE
+# cd $RUNBASE/BQSR
+# echo  ls $RUNBASE/LOFREQ2/*.bam \> bam.list >> $LOGFILE
+# ls $RUNBASE/LOFREQ2/*.bam > bam.list
+# echo vcf2bed \< $RUNBASE/LOFREQ2/lofreq2_all_samp_bed_norm_0.05.vcf \| cut -f 1-5 - \> lofreq2_all_samp_bed_norm_0.05_5col.bed $LOGFILE
+# vcf2bed < $RUNBASE/LOFREQ2/lofreq2_all_samp_bed_norm_0.05.vcf | cut -f 1-5 - > lofreq2_all_samp_bed_norm_0.05_5col.bed
+#
+# echo java -Xmx20G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -o recal_afs_0.005.tab -I bam.list >> $LOGFILE
+# java -Xmx20G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -o recal_afs_0.005.tab -I bam.list 2>> bqsr.err.log
+# echo java -Xmx20G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -BQSR recal_afs_0.005.tab -I bam.list -o recal_afs_0.005_secondpass.table >> $LOGFILE
+# java -Xmx20G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -BQSR recal_afs_0.005.tab -I bam.list -o recal_afs_0.005_secondpass.table  2>> bqsr.err.log
+# echo java -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -before recal_afs_0.005.tab -after recal_afs_0.005_secondpass.table -plots BQSR.pdf >> $LOGFILE
+# java -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -before recal_afs_0.005.tab -after recal_afs_0.005_secondpass.table -plots BQSR.pdf  2>> bqsr.err.log
+# while read p || [[ -n $p ]]; do
+#   FN=`basename $p .bam`
+#   echo java -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam >> $LOGFILE
+#   java -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam 2>> bqsr.err.log
+# done < bam.list
+
 cd $RUNBASE/BQSR
-echo  ls $RUNBASE/LOFREQ2/*.bam \> bam.list >> $LOGFILE
-ls $RUNBASE/LOFREQ2/*.bam > bam.list
-echo vcf2bed \< $RUNBASE/LOFREQ2/lofreq2_all_samp_bed_norm_0.05.vcf \| cut -f 1-5 - \> lofreq2_all_samp_bed_norm_0.05_5col.bed $LOGFILE
-vcf2bed < $RUNBASE/LOFREQ2/lofreq2_all_samp_bed_norm_0.05.vcf | cut -f 1-5 - > lofreq2_all_samp_bed_norm_0.05_5col.bed
-
-echo java -Xmx20G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -o recal_afs_0.005.tab -I bam.list >> $LOGFILE
-java -Xmx20G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -o recal_afs_0.005.tab -I bam.list 2>> bqsr.err.log
-echo java -Xmx20G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -BQSR recal_afs_0.005.tab -I bam.list -o recal_afs_0.005_secondpass.table >> $LOGFILE
-java -Xmx20G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -BQSR recal_afs_0.005.tab -I bam.list -o recal_afs_0.005_secondpass.table  2>> bqsr.err.log
-echo java -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -before recal_afs_0.005.tab -after recal_afs_0.005_secondpass.table -plots BQSR.pdf >> $LOGFILE
-java -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -before recal_afs_0.005.tab -after recal_afs_0.005_secondpass.table -plots BQSR.pdf  2>> bqsr.err.log
-while read p || [[ -n $p ]]; do
-  FN=`basename $p .bam`
-  echo java -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam >> $LOGFILE
-  java -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam 2>> bqsr.err.log
-done < bam.list
-
-
-
-
-
+ls `*.bam` > bam.list
+bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf.gz
 
 exit 0
 

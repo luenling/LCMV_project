@@ -3,17 +3,21 @@
 # author: Lukas Endler
 # Time-stamp: <2017-01-25 15:41:21 lukasendler>
 # date: 20.9.2015 at 12:23
-# looks for bam files in directory and a bed file and calls variants with lofreq2 for specific loci
+# looks for bam files in directory or gets a file name with bam files as second argument and a bed file and calls variants with lofreq2 for specific loci
 #--------------
 BASEDIR=/Volumes/Temp/Lukas/LCMV_project
 REFGENOME=$BASEDIR/References/viruses_short.fasta
 SAMTOOLS=/usr/local/bin/samtools
 BCFTOOLS=/usr/local/bin/bcftools
 LOFREQ=$BASEDIR/Tools/lofreq_star-2.1.2/bin/lofreq
+LIST=$2
+if [ ! -e $LIST  ]; then
+  ls *IDSQ*.bam > bam_files.list
+  LIST=bam_files.list
+fi
 
 
-
-for FFN in *real_viterbi_IDQS.bam; do
+while read FFN; do
   FN=`basename $FFN .bam`
   FN=${FN/_real*/}
   LOGFILE=${FN}.log
@@ -23,9 +27,11 @@ for FFN in *real_viterbi_IDQS.bam; do
   $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN 2>> $ERRORLOG >> $LOGFILE
   ES=$?
   echo finished lofreq at `date` with exit state $ES >> $LOGFILE
-done
+  echo $LOFREQ filter -i ${FN}_lofreq_bed.vcf -o ${FN}_lofreq_bed_filter.vcf -B 30 >> $LOGFILE
+  $LOFREQ filter -i ${FN}_lofreq_bed.vcf -o ${FN}_lofreq_bed_filter.vcf -B 30 2>> $ERRORLOG
+done < $LIST
 
-for i in *_lofreq_bed.vcf; do
+for i in *_lofreq_bed_filter.vcf; do
   SMP=${i%_lofreq*}
   SMP=${SMP#BSF_[^_]*_}
   awk -v OFS="\t" '/^\#\#[^I]/ {print} /^\#\#INFO/ {sub("AF,Number=1","AF,Number=A",$0); print $0; sub("INFO","FORMAT",$0); print $0; print "##FORMAT=<ID=PQ,Number=1,Type=Integer,Description=\"Phred-scaled variant call P value\">" } /\#CH/ {print $0,"FORMAT","'$SMP'"} !/^\#/ {form=$8;  gsub(/=[^A-Z]+/,":",form); gsub(/;/,":",form); sub(/:$/,"",form); sub(/INDEL:/,"",form);  samp=$8; gsub(/[A-Z4]+=/,"",samp); gsub(/;/,":",samp); sub(/INDEL:/,"",samp); print $0,form":PQ",samp":"$6}' $i | bgzip -c > ${SMP}_samp.lofreq.bed.vcf.gz
