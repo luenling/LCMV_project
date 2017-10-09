@@ -12,7 +12,7 @@ BCFTOOLS=/usr/local/bin/bcftools
 LOFREQ=$BASEDIR/Tools/lofreq_star-2.1.2/bin/lofreq
 LIST=$2
 if [ ! -e $LIST  ]; then
-  ls *IDSQ*.bam > bam_files.list
+  ls *IDQS*.bam > bam_files.list
   LIST=bam_files.list
 fi
 
