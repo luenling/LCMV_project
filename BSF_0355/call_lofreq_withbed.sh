@@ -3,17 +3,17 @@
 # author: Lukas Endler
 # Time-stamp: <2017-01-25 15:41:21 lukasendler>
 # date: 20.9.2015 at 12:23
-# looks for bam files in directory or gets a file name with bam files as second argument and a bed file and calls variants with lofreq2 for specific loci
+# gets two or three arguments, a bed file with positons, an vcf file done by samtools mpileup, and a list of bam files to use for lofreq. if no list given, it looks for bam files in directory or gets a file name with bam files as third argument and a bed file and calls variants with lofreq2 for specific loci
 #--------------
 BASEDIR=/Volumes/Temp/Lukas/LCMV_project
 REFGENOME=$BASEDIR/References/viruses_short.fasta
 SAMTOOLS=/usr/local/bin/samtools
 BCFTOOLS=/usr/local/bin/bcftools
 LOFREQ=$BASEDIR/Tools/lofreq_star-2.1.2/bin/lofreq
-LIST=$2
-if [ ! -e $LIST  ]; then
+LIST=$3
+if [ ! -f $LIST  ] ; then
   ls *IDQS*.bam > bam_files.list
-  LIST=bam_files.list
+  LIST="bam_files.list"
 fi
 
 
