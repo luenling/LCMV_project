@@ -50,7 +50,9 @@ for (i in seq(1,length(s.plot))) {
 }
 
 q("no")
+
+# garbage to be fitted in later
 # get samples greater than 50K
 l.covs.50bp.melted$sample[l.covs.50bp.melted$coverage > 50000]
-unique(s.covs.50bp.melted$sample[s.covs.50bp.melted$coverage > 50000])
+unique(s.covs.50bp.melted$sample[s.covs.50bp.melted$coverage > 100000])
 S31 S37 S38 S39
