@@ -23,8 +23,8 @@ while read FFN; do
   LOGFILE=${FN}.log
   ERRORLOG=${FN}.err.log
   echo "start lofreq2 at" `date` >> $LOGFILE
-  echo $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN >> $LOGFILE
-  $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN 2>> $ERRORLOG >> $LOGFILE
+  echo $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 45 -a 0.05 --call-indels $FFN >> $LOGFILE
+  $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 45 -a 0.05 --call-indels $FFN 2>> $ERRORLOG >> $LOGFILE
   ES=$?
   echo finished lofreq at `date` with exit state $ES >> $LOGFILE
   echo $LOFREQ filter -i ${FN}_lofreq_bed.vcf -o ${FN}_lofreq_bed_filter.vcf -B 30 >> $LOGFILE

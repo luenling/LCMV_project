@@ -151,6 +151,16 @@ vcfInfo(vcf)[["ANN"]] <- annos
 vir_clean = gff_virus[ ! (gff_virus$type %in% c("CDS","databank_entry")) ]
 mcols(vir_clean)$gene=c("5pUTR","GP","IGR","NP","3pUTR","5pUTR","Z","IGR","L","3pUTR")
 
+samples <- rownames(colData(vcf))
+
+layout(matrix(1:10, ncol = 1), widths = 1, respect = FALSE)
+chrom_lens=c(3377,7229)
+names(chrom_lens) = c("S","L")
+chrom="S"
+for (i in 21:30) {
+  print(paste("plotting sample",samples[i]))
+  reg <- plot_AFs_depths(vcf,chrom,samples[i],chrom_len = chrom_lens[chrom])
+}
 
 
 layout(matrix(1:(length(samps_1)+1), ncol = 1), widths = 1, respect = FALSE)
