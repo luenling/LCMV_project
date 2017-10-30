@@ -4,12 +4,15 @@
 # date: 17.9.2015 at 16:34
 # runs vphaser2 a file with a list of bam files and an optional vcf file from samtools for adding depths and creates vcf files
 #--------------
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-REFGENOME=$BASEDIR/References/viruses_short.fasta
-PICARD=/usr/local/Cellar/picard-tools/1.128/share/java/picard.jar
-SAMTOOLS=/usr/local/bin/samtools
-VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt2.py
-export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$BASEDIR/Tools/VPhaser-2-02112013/bamtools-2.3.0/lib
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+
+SYS=$(uname)
+#set dynam lib path for bamtools lib used for vphaser
+if [ $SYS == "Darwin" ] ; then
+	export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$BASEDIR/Tools/VPhaser-2-02112013/bamtools-2.3.0/lib
+elif [ $SYS == "linux" ] ; then
+	export LD_LIBRARY_PATH=$BAMTOOLS23:$LD_LIBRARY_PATH
+fi
 
 while read FN; do
 	FNB=`basename $FN .bam`
@@ -22,7 +25,7 @@ while read FN; do
 	ISNVS=${ISNVS}${FNB}.tab" "
 	LOGFILE=${FNB}.vphaser2.log
 	ERRORLOG=${FNB}.vphaser2.err.log
-	OMP_NUM_THREADS=8
+	OMP_NUM_THREADS=18
 	echo "start VPHASER2 for " $FN " at" `date` >> $LOGFILE
 	echo python $VPHASER2 vphaser_one_sample  --maxBias=100000  --vphaserNumThreads 18 --minReadsEach 2 $FN $REFGENOME ${FNB}.tab >> $LOGFILE
 	python $VPHASER2 vphaser_one_sample   --maxBias=100000 --vphaserNumThreads 18 --minReadsEach 2 $FN $REFGENOME ${FNB}.tab 2>> $ERRORLOG >> $LOGFILE
@@ -35,7 +38,7 @@ samtools faidx $REFGENOME S > S.fasta
 
 for i in $SAMPLES; do
   samtools faidx $REFGENOME L | sed 's/\>L/\>'$i'/g' >> L.fasta
-  samtools faidx $REFGENOME S | sed 's/\>S/\>'$i'/g' >> S.fasta    
+  samtools faidx $REFGENOME S | sed 's/\>S/\>'$i'/g' >> S.fasta
 done
 
 LOGFILE=all.log
@@ -60,9 +63,9 @@ do
     echo bcftools norm  -f $REFGENOME -m -any ${LVCF}.vcf \| bcftools view -e 'max(AF[*])<'$i' ' - \| bcftools norm  -f $REFGENOME -m +any - \> ${LVCF}_${i}.vcf >> $LOGFILE
     bcftools norm  -f $REFGENOME -m - ${LVCF}.vcf | bcftools view -e 'max(AF[*])<'$i' ' - | bcftools norm  -f $REFGENOME -m +any - > ${LVCF}_${i}.vcf
     echo starting running snpeff at `date` >> $LOGFILE
-    echo snpeff lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${LVCF}_${i}_snpeff_log.html ${LVCF}_${i}.vcf \> ${LVCF}_${i}_anno.vcf >> $LOGFILE
-    snpeff lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${LVCF}_${i}_snpeff_log.html ${LVCF}_${i}.vcf > ${LVCF}_${i}_anno.vcf
-    java -jar $BASEDIR/Tools/snpEff/SnpSift.jar extractFields ${LVCF}_${i}_anno.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" > ${LVCF}_${i}_anno.tab
+    echo $SNPEFF  -c $SNPEFF_CONF -dataDir $SNPEFF_DATA lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${LVCF}_${i}_snpeff_log.html ${LVCF}_${i}.vcf \> ${LVCF}_${i}_anno.vcf >> $LOGFILE
+    $SNPEFF  -c $SNPEFF_CONF -dataDir $SNPEFF_DATA lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${LVCF}_${i}_snpeff_log.html ${LVCF}_${i}.vcf > ${LVCF}_${i}_anno.vcf
+    $SNPSIFT extractFields ${LVCF}_${i}_anno.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" > ${LVCF}_${i}_anno.tab
     bcftools query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%LB\t%DP\t%AF]\n" ${LVCF}_${i}_anno.vcf > ${LVCF}_${i}.stats.tab
     bcftools query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%AF]\n"  ${LVCF}_${i}_anno.vcf > ${LVCF}_${i}.afs.tab
     bcftools query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%DP]\n"  ${LVCF}_${i}_anno.vcf > ${LVCF}_${i}.dp.tab
@@ -72,14 +75,14 @@ done
 
 
 for i in 0.1 0.05 0.01 ;
-do    
+do
 
     sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${LVCF}_${i}.afs.anno.tab >  ${LVCF}_${i}.afs.anno_alt.tab ;
 
-done    
+done
 
 for i in 0.1 0.05 0.01 ;
-do    
+do
 
     sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${LVCF}_${i}.stats.tab >  ${LVCF}_${i}.stats_alt.tab ;
 
@@ -98,5 +101,3 @@ fi
 
 
 /Volumes/Temp/Lukas/LCMV_project/Tools/viral-ngs/intrahost.py merge_to_vcf  $REFGENOMNE --samples "ND_0,ND_ARM_infected_BHK21_S11759" --isnvs "ND_0_noprime_sorted_viral_sh_max_cov_10000_short_RG.tab,ND_ARM_infected_BHK21_S11759_noprime_sorted_viral_sh_max_cov_10000_short_RG.tab"  --alignments "../ND_0_noprime_sorted_viral_sh_max_cov_10000_short_RG.bam,../ND_ARM_infected_BHK21_S11759_noprime_sorted_viral_sh_max_cov_10000_short_RG.bam"
-
-
