@@ -5,9 +5,8 @@
 # date: 20.9.2015 at 12:23
 # takes a file with list of bam files and vcf from samtools for depths and calls variants with lofreq2
 #--------------
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-SCRIPTS=${BASEDIR}/LCMV_project/BSF_0355/
-REFGENOME=$BASEDIR/References/viruses_short.fasta
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+
 FN=`basename $1 .list`
 FN=${FN/_noprime*/}
 FN=${FN/_sorted*/}

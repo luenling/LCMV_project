@@ -5,11 +5,28 @@
 # date: 20.9.2015 at 12:23
 # gets two or three arguments, a bed file with positons, an vcf file done by samtools mpileup, and a list of bam files to use for lofreq. if no list given, it looks for bam files in directory or gets a file name with bam files as third argument and a bed file and calls variants with lofreq2 for specific loci
 #--------------
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-REFGENOME=$BASEDIR/References/viruses_short.fasta
-SAMTOOLS=/usr/local/bin/samtools
-BCFTOOLS=/usr/local/bin/bcftools
-LOFREQ=$BASEDIR/Tools/lofreq_star-2.1.2/bin/lofreq
+
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+
+# if snpeff database not set up, do that
+if [ ! -d  "$SNPEFF_DATA/lcmv" ] ; then
+  SNP_LOG="snpeff.log"
+  echo creating new lcmv db entry at date >> $SNP_LOG
+  echo mkdir -p $SNPEFF_DATA/lcmv >> $SNP_LOG
+  mkdir -p $SNPEFF_DATA/lcmv
+  echo cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa >> $SNP_LOG
+  cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa
+  echo cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff >> $SNP_LOG
+  cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff
+  echo \echo '-e \"# LCMV\nlcmv.genome : LCMV\n\' \>\> $SNPEFF_CONF >> $SNP_LOG
+  echo -e "# LCMV\nlcmv.genome : LCMV\n" >> $SNPEFF_CONF
+  echo $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA >> $SNP_LOG
+  $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA lcmv 2>> $SNP_LOG
+  ES=$?
+  echo finished creating snpeff db at `date` with exit state $ES >> $SNP_LOG
+  [ $ES -eq 0 ] || exit $ES
+fi
+
 LIST=$3
 if [ ! -f $LIST  ] ; then
   ls *IDQS*.bam > bam_files.list
@@ -23,8 +40,8 @@ while read FFN; do
   LOGFILE=${FN}.log
   ERRORLOG=${FN}.err.log
   echo "start lofreq2 at" `date` >> $LOGFILE
-  echo $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 45 -a 0.05 --call-indels $FFN >> $LOGFILE
-  $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 45 -a 0.05 --call-indels $FFN 2>> $ERRORLOG >> $LOGFILE
+  echo $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN >> $LOGFILE
+  $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN 2>> $ERRORLOG >> $LOGFILE
   ES=$?
   echo finished lofreq at `date` with exit state $ES >> $LOGFILE
   echo $LOFREQ filter -i ${FN}_lofreq_bed.vcf -o ${FN}_lofreq_bed_filter.vcf -B 30 >> $LOGFILE
@@ -64,14 +81,14 @@ for i in 0.1 0.05 0.001 ; do
 
 
   echo startingrunning snpeff at `date` >> $LOGFILE
-  echo  snpeff lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${FN}_snpeff_log.html $LFVCF \> ${FN}_snpeff.vcf >> $LOGFILE
-  snpeff lcmv -no-intergenic  -no "INTRAGENIC" -no-downstream -no-upstream -stats ${FN}_snpeff_log.html $LFVCF > ${FN}_snpeff.vcf
+  echo  $SNPEFF -c $SNPEFF_CONF -dataDir $SNPEFF_DATA lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${FN}_snpeff_log.html $LFVCF \> ${FN}_snpeff.vcf >> $LOGFILE
+  $SNPEFF  -c $SNPEFF_CONF -dataDir $SNPEFF_DATA lcmv -no-intergenic  -no "INTRAGENIC" -no-downstream -no-upstream -stats ${FN}_snpeff_log.html $LFVCF > ${FN}_snpeff.vcf
 
   ES=$?
   echo finished snpeff at `date` with exit state $ES >> $LOGFILE
   [ $ES -eq 0 ] || exit $ES
 
-  java -jar $BASEDIR/Tools/snpEff/SnpSift.jar extractFields ${FN}_snpeff.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" > ${FN}_snpeff.tab
+  $SNPSIFT extractFields ${FN}_snpeff.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" > ${FN}_snpeff.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%SB\t%DP\t%AF\t%PQ]\n"  $LFVCF > ${FN}.stats.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%AF]\n"  $LFVCF > ${FN}.afs.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%DP]\n"  $LFVCF > ${FN}.dp.tab

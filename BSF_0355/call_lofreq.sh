@@ -5,10 +5,8 @@
 # date: 20.9.2015 at 12:23
 # takes a bam file calls variants with lofreq2
 #--------------
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-REFGENOME=$BASEDIR/References/viruses_short.fasta
-SAMTOOLS=/usr/local/bin/samtools
-LOFREQ=$BASEDIR/Tools/lofreq_star-2.1.2/bin/lofreq
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+
 FN=`basename $1 .bam`
 FN=${FN/_noprime*/}
 FN=${FN/_sorted*/}

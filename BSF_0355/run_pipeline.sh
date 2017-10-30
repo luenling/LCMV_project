@@ -5,15 +5,8 @@
 # Time-stamp: 9/25/2017, 2:34:37 PM lukasendler>
 # takes a bam file, reheaders it to only the two viral segments in short format
 #--------------
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-SCRIPTS=$BASEDIR/LCMV_project/BSF_0355/
-LOGFILE=$BASEDIR/Run_0355/pipeline.log
-RUNBASE=$BASEDIR/Run_0355
-RUN_ID=0355
-REFGENOME=$BASEDIR/References/viruses_short.fasta
-SAMTOOLS=/usr/local/bin/samtools
-GATK=$BASEDIR/Tools/GenomeAnalysisTK_3.5.0.jar
 
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
 
 # go through all bam files to create fastqs
 # for i in BSF_0355*_S_[1-9]*.bam ; do
@@ -125,7 +118,6 @@ nohup bash -c ' for i in ../*_max_cov_10000.bam; do bash \
 bash /Volumes/Temp/Lukas/LCMV_project/Scripts/combine_lofreq_vars.sh;\
 bash /Volumes/Temp/Lukas/LCMV_project/Scripts/call_lofreq_withbed.sh all_samp_bcf.bed'
 
-
-
+ ~/LCMV_project/Tools/VarDictJava/VarDict_java -G ../../References/viruses_short.fasta -f 0.01 -b ../BQSR/BSF_0355_S10_real_viterbi_IDQS_bqsr.bam -c 1 -S 2 -E 3 -z 1 viruses.bed | teststrandbias.R | var2vcf_valid.pl -N S10 -E -f 0.01 > test_S10.vcf
 
 java -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -BQSR recal_afs_0.005.tab -plots BQSR.pdf

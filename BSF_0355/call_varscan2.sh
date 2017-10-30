@@ -4,12 +4,8 @@
 # date: 20.9.2015 at 16:46
 # takes a bam file calls variants with varscan2
 #--------------
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-REFGENOME=$BASEDIR/References/viruses_short.fasta
-PICARD=/usr/local/Cellar/picard-tools/1.128/share/java/picard.jar
-GATK=/Volumes/Temp/Lukas/LCMV_project/Tools/GenomeAnalysisTK-3.4-46.jar
-SAMTOOLS=/usr/local/bin/samtools
-VARSCAN=$BASEDIR/Tools/varscan/VarScan.v2.4.0.jar
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+
 if [[ $1 =~ "mpileup" ]] ; then
     FN=`basename $1 .mpileup`
 else
@@ -42,10 +38,10 @@ echo finished varscan at `date` with exit state $ES >> $LOGFILE
 exit 0
 
 java -Xmx10g -jar  ~/LCMV_project/Tools/popoolation2_1201/mpileup2sync.jar --input *.mpileup --output q30_Q30.sync
-python  ~/LCMV_project//Scripts/get_allele_freqs.py -i q30_Q30.sync --all 
+python  $SCRIPTS/get_allele_freqs.py -i q30_Q30.sync --all
 for i in 0.01 0.05 0.1; do
-python  ~/LCMV_project/Scripts/add_afs_filter_varscan.py -i  ${FN}_varscan.vcf -d 50 -m $i -a *.af > ${FN}_varscan_afs_${i}.vcf
-bash  ~/LCMV_project/Scripts/call_snpeff.sh ${FN}_varscan_afs_${i}.vcf
+python  $SCRIPTS/add_afs_filter_varscan.py -i  ${FN}_varscan.vcf -d 50 -m $i -a *.af > ${FN}_varscan_afs_${i}.vcf
+bash  $SCRIPTS/call_snpeff.sh ${FN}_varscan_afs_${i}.vcf
 done
 
 

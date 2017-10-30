@@ -9,11 +9,7 @@
 #--------------
 
 
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-REFGENOME=$BASEDIR/References/viruses_Mus_musculus.GRCm38.fa.gz
-PICARD=/usr/local/Cellar/picard-tools/2.5.0/share/java/picard.jar
-SAMTOOLS=/usr/local/bin/samtools
-BWA=/usr/local//Cellar/bwa/0.7.15/bin/bwa
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
 
 OUTDIR='MAPPING/'
 if [ $2 ]; then
@@ -36,9 +32,9 @@ FN=${OUTDIR}/$FN
 LOGFILE=${FN}.log
 ERRORLOG=${FN}.err.log
 echo "start bwa mem  at" `date` >> $LOGFILE
-echo $BWA mem -R $RG -k 17 -r 1.25 -M -t 17 $REFGENOME $1 $R2  2\>\> $ERRORLOG  \| $SAMTOOLS view -Shb - \| $SAMTOOLS sort -T ${FN}_temp - \> $FN"_sorted.bam"  >> $LOGFILE
+echo $BWA mem -R $RG -k 17 -r 1.25 -M -t 17 $REFGENOME_FULL $1 $R2  2\>\> $ERRORLOG  \| $SAMTOOLS view -Shb - \| $SAMTOOLS sort -T ${FN}_temp - \> $FN"_sorted.bam"  >> $LOGFILE
 
-$BWA mem -R $RG  -k 17 -r 1.25 -M -t 17 $REFGENOME $1 $R2 2>> $ERRORLOG | $SAMTOOLS view -Shb - |  $SAMTOOLS sort -T ${FN}_temp - > $FN"_sorted.bam"
+$BWA mem -R $RG  -k 17 -r 1.25 -M -t 17 $REFGENOME_FULL $1 $R2 2>> $ERRORLOG | $SAMTOOLS view -Shb - |  $SAMTOOLS sort -T ${FN}_temp - > $FN"_sorted.bam"
 ES=$?
 echo finished bwa mem mapping at `date` with exit state $ES >> $LOGFILE
 [ $ES -eq 0 ] || exit $ES
@@ -47,7 +43,7 @@ $SAMTOOLS index ${FN}_sorted.bam
 $SAMTOOLS flagstat ${FN}_sorted.bam >> $LOGFILE
 echo idxstats >> $LOGFILE
 $SAMTOOLS idxstats ${FN}_sorted.bam >> $LOGFILE
-} & 
+} &
 # extract only the viral genomes
 $SAMTOOLS view -bh -f 2 -F 256 ${FN}_sorted.bam 'gi|86440167|gb|DQ361066.1|' 'gi|116563461|gb|DQ361065.2|' > ${FN}_sorted_viral.bam
 $SAMTOOLS index ${FN}_sorted_viral.bam
@@ -59,7 +55,6 @@ $SAMTOOLS idxstats ${FN}_sorted_viral.bam >> $LOGFILE
 
 # reheader
 
-REFGENOME=$BASEDIR/References/viruses_short.fasta
 FN=${FN}_sorted_viral
 
 LOGFILE=${FN}.log

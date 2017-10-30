@@ -5,11 +5,7 @@
 # Time-stamp: 9/25/2017, 2:34:37 PM lukasendler>
 # takes a bam file, reheaders it to only the two viral segments in short format
 #--------------
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-REFGENOME=$BASEDIR/References/viruses_short.fasta
-PICARD=/usr/local/Cellar/picard-tools/2.5.0/share/java/picard.jar
-SAMTOOLS=/usr/local/bin/samtools
-BWA=/usr/local//Cellar/bwa/0.7.15/bin/bwa
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
 
 FN=`basename $1 .bam`
 

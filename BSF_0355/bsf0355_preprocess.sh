@@ -5,15 +5,9 @@
 # takes a bam file of reads with the BSF format name and the name of an outputdir (default: FASTQ) BSF_##__HL37TBBXX_6_S_44_0_S28607.bam and trimmes and clips to get 2 fq.gz files
 # turn on extended globbing behavior
 shopt -s extglob
-BASEDIR=/Volumes/Temp/Lukas/LCMV_project
-REFGENOME=$BASEDIR/References/viruses_Mus_musculus.GRCm38.fa.gz
-PICARD=/usr/local/Cellar/picard-tools/2.5.0/share/java/picard.jar
-SAMTOOLS=/usr/local/bin/samtools
-BWA=/usr/local//Cellar/bwa/0.7.15/bin/bwa
-BBDUK=$BASEDIR/Tools/bbmap/bbduk.sh
-BBMERGE=$BASEDIR/Tools/bbmap/bbmerge.sh
-ADAPTS=$BASEDIR/Tools/bbmap/resources/adapters.fa
-PRIMERS=$BASEDIR/References/primers.fna
+
+source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+
 #REFGEN=/Volumes/Temp/Lukas/reference_genome/ref_genome_combined.fa
 INFILE=$1
 FN=`basename $1 .bam`
