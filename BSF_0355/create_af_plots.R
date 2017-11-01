@@ -32,9 +32,12 @@ get_afs_annos  <- function(vcf,region_idx,sample) {
   )
   )
   , ncol=3,byrow=TRUE)
-  afs=afs[! is.na(afs[,3]),]
-  afs=data.frame(afs)
   colnames(afs)=c("xpos","ALL","AF")
+  afs=as.data.frame(afs)
+  afs=afs[! is.na(afs[,3]),]
+  if (nrow(afs) == 0) { 
+    return (list())
+    }
   afs$ANNO=sapply(1:nrow(afs), function (x) annos[[ afs$xpos[x] ]][ afs$ALL[x] ] )
   afs$ANNO[is.na(afs$ANNO)]="-"
   afs$ANNO[grep("synonymous_variant",afs$ANNO)]="synonymous_variant"
@@ -74,8 +77,10 @@ plot_AFs_depths <- function(vcf,chrom,sample,annos=TRUE,depths=TRUE, chrom_len =
   mtext(c("1","5","10","50","100"),side=2,at=c(0.01,0.05,0.1,0.5,1.0),line=1,outer=F,cex=0.60,las=1)
   abline(h = c(0.01,0.1,0.5,1.0), lty=3,col="lightgrey")
   afs=get_afs_annos(vcf,region_idx,sample)
-  afs$start = sapply(afs$xpos,function (x)  df_region$start[df_region$xpos == x ])
-  points(afs[,xcol],afs$AF,col=cols[afs$ANNO],cex=1,pch=symb[afs$ALL]) 
+  if ( length(afs) > 0 ) {
+    afs$start = sapply(afs$xpos,function (x)  df_region$start[df_region$xpos == x ])
+    points(afs[,xcol],afs$AF,col=cols[afs$ANNO],cex=1,pch=symb[afs$ALL]) 
+  }
   par(new = T)
   plot(df_region[,xcol], df_region$DP, type="l", axes=F, log="y", xlab=NA, ylab=NA,col="darkgrey")
   axis(side = 4)
@@ -153,28 +158,38 @@ mcols(vir_clean)$gene=c("5pUTR","GP","IGR","NP","3pUTR","5pUTR","Z","IGR","L","3
 
 samples <- rownames(colData(vcf))
 
-layout(matrix(1:10, ncol = 1), widths = 1, respect = FALSE)
+layout(matrix(1:5, ncol = 1), widths = 1, respect = FALSE)
 chrom_lens=c(3377,7229)
 names(chrom_lens) = c("S","L")
 chrom="S"
-for (i in 21:30) {
+for (i in 1:4) {
   print(paste("plotting sample",samples[i]))
   reg <- plot_AFs_depths(vcf,chrom,samples[i],chrom_len = chrom_lens[chrom])
 }
 
 
-layout(matrix(1:(length(samps_1)+1), ncol = 1), widths = 1, respect = FALSE)
-for (i in samps_1) {
-  print(paste("plotting sample",i))
-  reg <- plot_AFs_depths(vcf,chrom,i,chrom_len = chrom_lens[chrom])
-}
-par(mar = c(3, 4, 0, 4))
-plot(1,10,pch=NULL,xlim=c(1,chrom_lens[chrom]),ylim=c(-1,1),ylab=NA,axes=FALSE,xlab=chrom,bty="n")
-axis(side=1,at=0:(chrom_lens[chrom]/1000)*1000)
-mtext(chrom, side=1, line=2)
-
-for( i in 1:length(vir_clean[seqnames(vir_clean) == chrom])){
-  plot_element(vir_clean[seqnames(vir_clean) == chrom][i],chrom_lens[chrom],label=FALSE)
+# idxst=seq(1,48,by = 5)
+smpls=split(samples,ceiling(seq_along(samples)/5))
+for (smps in smpls){
+  for (chrom in c("S","L")){
+    layout(matrix(1:(length(smps)+2), ncol = 1), widths = 1, respect = FALSE)
+    for (i in smps) {
+      print(paste("plotting sample",i))
+      reg <- plot_AFs_depths(vcf,chrom,samples[i],chrom_len = chrom_lens[chrom])
+    }
+    par(mar = c(3, 4, 0, 4))
+    plot(1,10,pch=NULL,xlim=c(1,chrom_lens[chrom]),ylim=c(-1,1),ylab=NA,axes=FALSE,xlab=chrom,bty="n")
+    axis(side=1,at=0:(chrom_lens[chrom]/1000)*1000)
+    mtext(chrom, side=1, line=2)
+    for( i in 1:length(vir_clean[seqnames(vir_clean) == chrom])){
+      plot_element(vir_clean[seqnames(vir_clean) == chrom][i],chrom_lens[chrom],label=FALSE)
+    }
+    plot.new()
+    legend("bottom",c("-","synonymous_variant","missense_variant","stop_lost","stop_gained","start_lost","inframe_deletion","frameshift_variant","disruptive_inframe_deletion","alt. allele 1", "alt. allele 2","alt. allele 3"),
+           col=c("black","green","red","orangered","orange","orangered4","pink","purple","purple",rep("black",3)),
+           pch=c(rep(3,9),3,4,8),cex=0.75,ncol=4)
+    dev.copy2pdf(file=paste0("plot_S",smps[1],"_",smps[length(smps)],"_",chrom,".pdf")
+  }
 }
 
 
