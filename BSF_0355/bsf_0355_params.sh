@@ -56,8 +56,8 @@ elif [ $USER == "vetlinux01" ] ; then
   #VarDict java base dir
   VARDICT=$BASEDIR/Tools/VarDictJava/
   # setup variables for SNPEFF
-  SNPEFF_DATA="/usr/local/Cellar/snpeff/4.3p/share/snpeff/data"
-  SNPEFF_CONF="/usr/local/Cellar/snpeff/4.3p/share/snpeff/snpEff.config"
+  SNPEFF_DATA="~/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/data"
+  SNPEFF_CONF="~/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/snpEff.config"
   SNPEFF="snpEff"
   SNPSIFT="SnpSift"
   # setup GATK path
