@@ -45,7 +45,7 @@ if [ $USER == "vetgrid01" ]; then
 
 elif [ $USER == "vetlinux01" ] ; then
   # general tools
-  PICARD=~/.linuxbrew/Cellar/picard-tools/2.12.1/share/java/picard.jar
+  PICARD=/home/vetlinux01/.linuxbrew/Cellar/picard-tools/2.12.1/share/java/picard.jar
   SAMTOOLS=/home/vetlinux01/.linuxbrew/bin/samtools
   BWA=/home/vetlinux01/.linuxbrew/bin/bwa
   BCFTOOLS=/home/vetlinux01/bin/bcftools
@@ -56,16 +56,16 @@ elif [ $USER == "vetlinux01" ] ; then
   #VarDict java base dir
   VARDICT=$BASEDIR/Tools/VarDictJava/
   # setup variables for SNPEFF
-  SNPEFF_DATA="~/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/data"
-  SNPEFF_CONF="~/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/snpEff.config"
+  SNPEFF_DATA="/home/vetlinux01/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/data"
+  SNPEFF_CONF="/home/vetlinux01/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/snpEff.config"
   SNPEFF="snpEff"
   SNPSIFT="SnpSift"
   # setup GATK path
-  GATK=~/Tools/GenomeAnalysisTK.jar
+  GATK=/home/vetlinux01/Tools/GenomeAnalysisTK.jar
   # setup path to BBDUK
-  BBDUK=~/Tools/bbmap_37.57/bbduk.sh
-  BBMERGE=~/Tools/bbmap_37.57/bbmerge.sh
-  ADAPTS=~/Tools/bbmap_37.57/resources/adapters.fa
+  BBDUK=/home/vetlinux01/Tools/bbmap_37.57/bbduk.sh
+  BBMERGE=/home/vetlinux01/Tools/bbmap_37.57/bbmerge.sh
+  ADAPTS=/home/vetlinux01/Tools/bbmap_37.57/resources/adapters.fa
   # VPHASER2
   VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt2.py
   BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
