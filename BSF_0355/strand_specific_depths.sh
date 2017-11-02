@@ -15,6 +15,7 @@ while read i ; do
   $SAMTOOLS view -q 1 -h -F 256 -f 2 -G 80  $i  | $SAMTOOLS view -b -G 160 -  | $SAMTOOLS depth -m 100000000 -a - > Coverages/${SM}_minus.depth
 done < $1
 
+cut -f 1,2 $( ls  Coverages/*_plus.depth | head -1 ) | cat <( echo -e "CHROM\tBPS")  - > CoveragesCoverages/bsf_${RUN_ID}_all_plus.depths
 for i in Coverages/*_plus.depth; do
   A=$(basename $i _plus.depth);
   echo $A | cat - <(cut -f 3 $i) | paste  Coverages/bsf_${RUN_ID}_all_plus.depths - > temp;
