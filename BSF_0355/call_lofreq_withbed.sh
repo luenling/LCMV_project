@@ -8,24 +8,6 @@
 
 source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
 
-# if snpeff database not set up, do that
-if [ ! -d  "$SNPEFF_DATA/lcmv" ] ; then
-  SNP_LOG="snpeff.log"
-  echo creating new lcmv db entry at date >> $SNP_LOG
-  echo mkdir -p $SNPEFF_DATA/lcmv >> $SNP_LOG
-  mkdir -p $SNPEFF_DATA/lcmv
-  echo cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa >> $SNP_LOG
-  cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa
-  echo cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff >> $SNP_LOG
-  cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff
-  echo \echo '-e \"# LCMV\nlcmv.genome : LCMV\n\' \>\> $SNPEFF_CONF >> $SNP_LOG
-  echo -e "# LCMV\nlcmv.genome : LCMV\n" >> $SNPEFF_CONF
-  echo $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA >> $SNP_LOG
-  $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA lcmv 2>> $SNP_LOG
-  ES=$?
-  echo finished creating snpeff db at `date` with exit state $ES >> $SNP_LOG
-  [ $ES -eq 0 ] || exit $ES
-fi
 
 LIST=$3
 if [ ! -f $LIST  ] ; then

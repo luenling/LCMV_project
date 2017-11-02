@@ -46,7 +46,7 @@ if [ $USER == "vetgrid01" ]; then
 elif [ $USER == "vetlinux01" ] ; then
   # general tools
   PICARD=~/.linuxbrew/Cellar/picard-tools/2.12.1/share/java/picard.jar
-  SAMTOOLS=samtools
+  SAMTOOLS=/home/vetlinux01/.linuxbrew/bin/samtools
   BWA=/home/vetlinux01/.linuxbrew/bin/bwa
   BCFTOOLS=/home/vetlinux01/bin/bcftools
   # Lofreq executable
@@ -71,6 +71,26 @@ elif [ $USER == "vetlinux01" ] ; then
   BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
 
 fi
+
+# if snpeff database not set up, do that
+if [ ! -d  "$SNPEFF_DATA/lcmv" ] ; then
+  SNP_LOG="snpeff.log"
+  echo creating new lcmv db entry at date >> $SNP_LOG
+  echo mkdir -p $SNPEFF_DATA/lcmv >> $SNP_LOG
+  mkdir -p $SNPEFF_DATA/lcmv
+  echo cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa >> $SNP_LOG
+  cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa
+  echo cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff >> $SNP_LOG
+  cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff
+  echo \echo '-e \"# LCMV\nlcmv.genome : LCMV\n\' \>\> $SNPEFF_CONF >> $SNP_LOG
+  echo -e "# LCMV\nlcmv.genome : LCMV\n" >> $SNPEFF_CONF
+  echo $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA >> $SNP_LOG
+  $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA lcmv 2>> $SNP_LOG
+  ES=$?
+  echo finished creating snpeff db at `date` with exit state $ES >> $SNP_LOG
+  [ $ES -eq 0 ] || exit $ES
+fi
+
 
 
 exit
