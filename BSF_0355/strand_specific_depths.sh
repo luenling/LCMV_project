@@ -6,6 +6,7 @@
 #--------------
 #
 source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+
 mkdir -p Coverages
 
 while read i ; do
