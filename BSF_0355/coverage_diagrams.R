@@ -1,6 +1,6 @@
 #setwd("/Volumes//vetgrid01/LCMV_project/Run_0277/Mappings/Coverages")
 #setwd("~/Data/")
-# test if there is exactly one argument and whetehr it is a file to be read
+# test if there is exactly one argument and whether it is a file to be read
 args = commandArgs(trailingOnly=TRUE)
 if (length(args) != 1){
   write("An input filename containing coverage data must be supplied.\n",stderr())
