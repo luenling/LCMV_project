@@ -90,7 +90,3 @@ if [ ! -d  "$SNPEFF_DATA/lcmv" ] ; then
   echo finished creating snpeff db at `date` with exit state $ES >> $SNP_LOG
   [ $ES -eq 0 ] || exit $ES
 fi
-
-
-
-exit
