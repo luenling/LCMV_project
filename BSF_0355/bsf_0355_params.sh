@@ -80,10 +80,10 @@ if [ ! -d  "$SNPEFF_DATA/lcmv" ] ; then
   mkdir -p $SNPEFF_DATA/lcmv
   echo cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa >> $SNP_LOG
   cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa
-  echo cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff >> $SNP_LOG
-  cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff
-  echo \echo '-e \"# LCMV\nlcmv.genome : LCMV\n\' \>\> $SNPEFF_CONF >> $SNP_LOG
-  echo -e "# LCMV\nlcmv.genome : LCMV\n" >> $SNPEFF_CONF
+  echo cp ${REFGENOME/%\.fasta/\.gff} $SNPEFF_DATA/lcmv/genes.gff >> $SNP_LOG
+  cp ${REFGENOME/%\.fasta/\.gff} $SNPEFF_DATA/lcmv/genes.gff
+  echo \echo '-e \"# LCMV\nlcmv.genome : lcmv\n\' \>\> $SNPEFF_CONF >> $SNP_LOG
+  echo -e "# LCMV\nlcmv.genome : lcmv\n" >> $SNPEFF_CONF
   echo $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA >> $SNP_LOG
   $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA lcmv 2>> $SNP_LOG
   ES=$?

@@ -10,7 +10,7 @@ source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
 LOGFILE=${RUN_ID}"_vardict.log"
 
 while read file; do
-  SM=$($SAMTOOLS view -H $i | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g")
+  SM=$($SAMTOOLS view -H $file | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g")
   BN=${RUN_ID}"_"$SM
   ERRLOG=$BN"_vardict.err.log"
   echo start vardict at `date` >> $LOGFILE
@@ -20,12 +20,13 @@ while read file; do
   echo finished lofreq at `date` with exit state $ES >> $LOGFILE
   echo tabix -p vcf ${BN}_vardict_filt.vcf.gz >> $LOGFILE
   tabix -p vcf ${BN}_vardict_filt.vcf.gz
-  echo $BCFTOOLS norm -f $REFGENOME -m+any -O z ${BN}_vardict_filt.vcf.gz \>  ${BN}_vardict_filt_norm.vcf.gz >> $LOGFILE
-  $BCFTOOLS norm -f $REFGENOME -m+any -O z ${BN}_vardict_filt.vcf.gz >  ${BN}_vardict_filt_norm.vcf.gz
+  echo $BCFTOOLS norm -f $REFGENOME -m+any ${BN}_vardict_filt.vcf.gz \| $BCFTOOLS view --apply-filters "PASS" -O z - \>  ${BN}_vardict_filt_norm.vcf.gz >> $LOGFILE
+  $BCFTOOLS norm -f $REFGENOME -m+any ${BN}_vardict_filt.vcf.gz | $BCFTOOLS view --apply-filters "PASS" -O z - >  ${BN}_vardict_filt_norm.vcf.gz
   tabix -p vcf ${BN}_vardict_filt_norm.vcf.gz
 done < $1
 
-$BCFTOOLS merge -i "DP:sum,DP4:sum,AF:max,SB:max"  -m none -O v *_vardict_filt_norm.vcf.gz > all_samps_vardict_filt_norm.vcf
+echo $BCFTOOLS merge -i "SAMPLE:join,DP:sum,AF:max,SBF:min,MQ:avg,QUAL:avg,PMEAN:avg,PSTD:min,BIAS:join,REFBIAS:join,VARBIAS:join"  -m none -O v \*_vardict_filt_norm.vcf.gz \> all_samps_vardict_filt_norm.vcf >> $LOGFILE
+$BCFTOOLS merge -i "SAMPLE:join,DP:sum,AF:max,SBF:min,MQ:avg,QUAL:avg,PMEAN:avg,PSTD:min,BIAS:join,REFBIAS:join,VARBIAS:join"  -m none -O v *_vardict_filt_norm.vcf.gz > all_samps_vardict_filt_norm.vcf
 
 DPS=$2
 
@@ -34,6 +35,7 @@ then
   mv all_samps_vardict_filt_norm.vcf all_samps_vardict_filt_tmp.vcf
   bgzip all_samps_vardict_filt_tmp.vcf
   tabix -f -p vcf all_samps_vardict_filt_tmp.vcf.gz
+  echo $BCFTOOLS annotate -a $DPS -c "+FORMAT/DP" all_samps_vardict_filt_tmp.vcf.gz \> all_samps_vardict_filt_norm.vcf >> $LOGFILE
   $BCFTOOLS annotate -a $DPS -c "+FORMAT/DP" all_samps_vardict_filt_tmp.vcf.gz > all_samps_vardict_filt_norm.vcf
 fi
 
@@ -52,15 +54,15 @@ for i in 0.1 0.05 0.001 ; do
   [ $ES -eq 0 ] || exit $ES
 
   $SNPSIFT extractFields ${FN}_snpeff.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" > ${FN}_snpeff.tab
-  $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%SB\t%DP\t%AF\t%PQ]\n"  $LFVCF > ${FN}.stats.tab
+  #$BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%SB\t%DP\t%AF\t%PQ]\n"  $LFVCF > ${FN}.stats.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%AF]\n"  $LFVCF > ${FN}.afs.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%DP]\n"  $LFVCF > ${FN}.dp.tab
-  $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%PQ]\n"  $LFVCF > ${FN}.pq.tab
-  paste ${FN}.afs.tab <(cut -f5- ${FN}.dp.tab) <(cut -f5- ${FN}.pq.tab) >  ${FN}.afs.dp.pq.tab
-  python ${BASEDIR}/Scripts/get_positions_from_sync.py -a ${FN}.afs.dp.pq.tab -b ${FN}_snpeff.tab --both | cat <(head -1  ${FN}.afs.dp.pq.tab )  -  >  ${FN}.afs.anno.tab ;
+  #$BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%PQ]\n"  $LFVCF > ${FN}.pq.tab
+  paste ${FN}.afs.tab <(cut -f5- ${FN}.dp.tab) >  ${FN}.afs.dp.tab
+  python ${BASEDIR}/Scripts/get_positions_from_sync.py -a ${FN}.afs.dp.tab -b ${FN}_snpeff.tab --both | cat <(head -1  ${FN}.afs.dp.tab )  -  >  ${FN}.afs.anno.tab ;
   sed ' s/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${FN}.afs.anno.tab >  ${FN}.afs.anno_alt.tab ;
 
-  sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${FN}.stats.tab >  ${FN}.stats_alt.tab ;
+  #sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${FN}.stats.tab >  ${FN}.stats_alt.tab ;
 
 done
 
