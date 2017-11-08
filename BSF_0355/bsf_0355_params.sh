@@ -28,6 +28,10 @@ if [ $USER == "vetgrid01" ]; then
   VARSCAN=$BASEDIR/Tools/varscan/VarScan.v2.4.0.jar
   #VarDict java base dir
   VARDICT=$BASEDIR/Tools/VarDictJava/
+  # BRESEQ path
+  BRESEQ=/usr/local/Cellar/breseq/0.31.1/bin/breseq
+  GDTOOLS=/usr/local/Cellar/breseq/0.31.1/bin/gdtools
+
   # setup variables for SNPEFF
   SNPEFF_DATA="/usr/local/Cellar/snpeff/4.2/share/snpeff/data"
   SNPEFF_CONF="/usr/local/Cellar/snpeff/4.2/share/snpeff/snpEff.config"
@@ -55,6 +59,9 @@ elif [ $USER == "vetlinux01" ] ; then
   VARSCAN=$BASEDIR/Tools/VarScan.v2.4.2.jar
   #VarDict java base dir
   VARDICT=$BASEDIR/Tools/VarDictJava/
+  # BRESEQ path
+  BRESEQ=/home/vetlinux01/.linuxbrew/Cellar/breseq/0.31.1/bin/breseq
+  GDTOOLS=/home/vetlinux01/.linuxbrew/Cellar/breseq/0.31.1/bin/gdtools
   # setup variables for SNPEFF
   SNPEFF_DATA="/home/vetlinux01/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/data"
   SNPEFF_CONF="/home/vetlinux01/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/snpEff.config"
@@ -65,6 +72,7 @@ elif [ $USER == "vetlinux01" ] ; then
   # setup path to BBDUK
   BBDUK=/home/vetlinux01/Tools/bbmap_37.57/bbduk.sh
   BBMERGE=/home/vetlinux01/Tools/bbmap_37.57/bbmerge.sh
+  BBREPAIR=/home/vetlinux01/Tools/bbmap_37.57/repair.sh
   ADAPTS=/home/vetlinux01/Tools/bbmap_37.57/resources/adapters.fa
   # VPHASER2
   VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt2.py
