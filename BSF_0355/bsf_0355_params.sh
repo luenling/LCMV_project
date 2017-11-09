@@ -44,8 +44,9 @@ if [ $USER == "vetgrid01" ]; then
   BBMERGE=$BASEDIR/Tools/bbmap/bbmerge.sh
   ADAPTS=$BASEDIR/Tools/bbmap/resources/adapters.fa
   # VPHASER2
-  VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt2.py
-  BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
+  VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt.py
+  #BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
+  CONDAPATH=
 
 elif [ $USER == "vetlinux01" ] ; then
   # general tools
@@ -75,8 +76,9 @@ elif [ $USER == "vetlinux01" ] ; then
   BBREPAIR=/home/vetlinux01/Tools/bbmap_37.57/repair.sh
   ADAPTS=/home/vetlinux01/Tools/bbmap_37.57/resources/adapters.fa
   # VPHASER2
-  VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt2.py
+  VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt.py
   BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
+  CONDAPATH=/Volumes/Temp/Lukas/miniconda/bin
 
 fi
 

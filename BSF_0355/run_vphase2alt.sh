@@ -3,20 +3,24 @@
 # author: Lukas Endler
 # date: 17.9.2015 at 16:34
 # runs vphaser2 a file with a list of bam files and an optional vcf file from samtools for adding depths and creates vcf files
+# needs conda environment
 #--------------
 source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
 
-SYS=$(uname)
+OLDPATH=$PATH
+export PATH=$CONDAPATH:$PATH
+#SYS=$(uname)
 #set dynam lib path for bamtools lib used for vphaser
-if [ $SYS == "Darwin" ] ; then
-	export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$BASEDIR/Tools/VPhaser-2-02112013/bamtools-2.3.0/lib
-elif [ $SYS == "linux" ] ; then
-	export LD_LIBRARY_PATH=$BAMTOOLS23:$LD_LIBRARY_PATH
-fi
+# if [ $SYS == "Darwin" ] ; then
+# 	export DYLD_LIBRARY_PATH=$DYLD_LIBRARY_PATH:$BASEDIR/Tools/VPhaser-2-02112013/bamtools-2.3.0/lib
+# elif [ $SYS == "linux" ] ; then
+# 	export LD_LIBRARY_PATH=$BAMTOOLS23:$LD_LIBRARY_PATH
+# fi
 
+source activate viral-ngs-env
 while read FN; do
 	FNB=`basename $FN .bam`
-	SAMP=${FNB/_S19*/}
+	SM=$($SAMTOOLS view -H $FN | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g")
 	#picard AddOrReplaceReadGroups I=$FN O=`basename $FN .bam`"_vp.bam" RGID=${SAMP} RGLB=$SAMP RGPL=illumina RGPU=unitx RGSM=$SAMP 2> $FN.picard.err.log
 	#FN=`basename $FN .bam`"_vp.bam"
 	#samtools index $FN
@@ -25,10 +29,10 @@ while read FN; do
 	ISNVS=${ISNVS}${FNB}.tab" "
 	LOGFILE=${FNB}.vphaser2.log
 	ERRORLOG=${FNB}.vphaser2.err.log
-	OMP_NUM_THREADS=18
+	OMP_NUM_THREADS=40
 	echo "start VPHASER2 for " $FN " at" `date` >> $LOGFILE
-	echo python $VPHASER2 vphaser_one_sample  --maxBias=100000  --vphaserNumThreads 18 --minReadsEach 2 $FN $REFGENOME ${FNB}.tab >> $LOGFILE
-	python $VPHASER2 vphaser_one_sample   --maxBias=100000 --vphaserNumThreads 18 --minReadsEach 2 $FN $REFGENOME ${FNB}.tab 2>> $ERRORLOG >> $LOGFILE
+	echo python $VPHASER2 vphaser_one_sample  --maxBias=100000  --vphaserNumThreads 40 --minReadsEach 2 $FN $REFGENOME ${FNB}.tab >> $LOGFILE
+	python $VPHASER2 vphaser_one_sample   --maxBias=100000 --vphaserNumThreads 40 --minReadsEach 2 $FN $REFGENOME ${FNB}.tab 2>> $ERRORLOG >> $LOGFILE
 	ES=$?
 	echo finished vphaser2 at `date` with exit state $ES >> $LOGFILE
 done <$1
@@ -65,7 +69,7 @@ do
     echo starting running snpeff at `date` >> $LOGFILE
     echo $SNPEFF  -c $SNPEFF_CONF -dataDir $SNPEFF_DATA lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${LVCF}_${i}_snpeff_log.html ${LVCF}_${i}.vcf \> ${LVCF}_${i}_anno.vcf >> $LOGFILE
     $SNPEFF  -c $SNPEFF_CONF -dataDir $SNPEFF_DATA lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${LVCF}_${i}_snpeff_log.html ${LVCF}_${i}.vcf > ${LVCF}_${i}_anno.vcf
-    $SNPSIFT extractFields ${LVCF}_${i}_anno.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" > ${LVCF}_${i}_anno.tab
+    $SNPSIFT extractFields ${LVCF}_${i}_anno.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" | sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' > ${LVCF}_${i}_anno.tab
     bcftools query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%LB\t%DP\t%AF]\n" ${LVCF}_${i}_anno.vcf > ${LVCF}_${i}.stats.tab
     bcftools query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%AF]\n"  ${LVCF}_${i}_anno.vcf > ${LVCF}_${i}.afs.tab
     bcftools query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%DP]\n"  ${LVCF}_${i}_anno.vcf > ${LVCF}_${i}.dp.tab
@@ -74,19 +78,9 @@ do
 done
 
 
-for i in 0.1 0.05 0.01 ;
-do
-
-    sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${LVCF}_${i}.afs.anno.tab >  ${LVCF}_${i}.afs.anno_alt.tab ;
-
-done
-
-for i in 0.1 0.05 0.01 ;
-do
-
-    sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${LVCF}_${i}.stats.tab >  ${LVCF}_${i}.stats_alt.tab ;
-
-done
+# reset environment and path
+source deactivate
+export PATH=$OLDPATH
 
 exit 0
 
