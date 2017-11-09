@@ -29,7 +29,6 @@ while read FN; do
 	ISNVS=${ISNVS}${FNB}.tab" "
 	LOGFILE=${FNB}.vphaser2.log
 	ERRORLOG=${FNB}.vphaser2.err.log
-	OMP_NUM_THREADS=40
 	echo "start VPHASER2 for " $FN " at" `date` >> $LOGFILE
 	echo python $VPHASER2 vphaser_one_sample  --maxBias=100000  --vphaserNumThreads 40 --minReadsEach 2 $FN $REFGENOME ${FNB}.tab >> $LOGFILE
 	python $VPHASER2 vphaser_one_sample   --maxBias=100000 --vphaserNumThreads 40 --minReadsEach 2 $FN $REFGENOME ${FNB}.tab 2>> $ERRORLOG >> $LOGFILE
@@ -37,12 +36,12 @@ while read FN; do
 	echo finished vphaser2 at `date` with exit state $ES >> $LOGFILE
 done <$1
 
-samtools faidx $REFGENOME L > L.fasta
-samtools faidx $REFGENOME S > S.fasta
+$SAMTOOLS faidx $REFGENOME L > L.fasta
+$SAMTOOLS faidx $REFGENOME S > S.fasta
 
 for i in $SAMPLES; do
-  samtools faidx $REFGENOME L | sed 's/\>L/\>'$i'/g' >> L.fasta
-  samtools faidx $REFGENOME S | sed 's/\>S/\>'$i'/g' >> S.fasta
+  $SAMTOOLS faidx $REFGENOME L | sed 's/\>L/\>'$i'/g' >> L.fasta
+  $SAMTOOLS faidx $REFGENOME S | sed 's/\>S/\>'$i'/g' >> S.fasta
 done
 
 LOGFILE=all.log
@@ -50,6 +49,10 @@ LOGFILE=all.log
 echo " merge to vcf " $1 " at" `date` >> all.log
 echo python $VPHASER2 merge_to_vcf $REFGENOME all_out.vcf --samples $SAMPLES --isnvs $ISNVS --alignments L.fasta S.fasta  >> all.log
 python $VPHASER2 merge_to_vcf $REFGENOME all_out.vcf --samples $SAMPLES --isnvs $ISNVS --alignments L.fasta S.fasta  2>> all.err.log >> all.log
+
+source deactivate
+export PATH=$OLDPATH
+
 
 bgzip -c  all_out.vcf >  all_out.vcf.gz
 tabix -p vcf  all_out.vcf.gz
@@ -79,8 +82,6 @@ done
 
 
 # reset environment and path
-source deactivate
-export PATH=$OLDPATH
 
 exit 0
 
