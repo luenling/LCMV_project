@@ -28,6 +28,10 @@ if [ $USER == "vetgrid01" ]; then
   VARSCAN=$BASEDIR/Tools/varscan/VarScan.v2.4.0.jar
   #VarDict java base dir
   VARDICT=$BASEDIR/Tools/VarDictJava/
+  # BRESEQ path
+  BRESEQ=/usr/local/Cellar/breseq/0.31.1/bin/breseq
+  GDTOOLS=/usr/local/Cellar/breseq/0.31.1/bin/gdtools
+
   # setup variables for SNPEFF
   SNPEFF_DATA="/usr/local/Cellar/snpeff/4.2/share/snpeff/data"
   SNPEFF_CONF="/usr/local/Cellar/snpeff/4.2/share/snpeff/snpEff.config"
@@ -40,13 +44,14 @@ if [ $USER == "vetgrid01" ]; then
   BBMERGE=$BASEDIR/Tools/bbmap/bbmerge.sh
   ADAPTS=$BASEDIR/Tools/bbmap/resources/adapters.fa
   # VPHASER2
-  VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt2.py
-  BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
+  VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt.py
+  #BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
+  CONDAPATH=
 
 elif [ $USER == "vetlinux01" ] ; then
   # general tools
-  PICARD=~/.linuxbrew/Cellar/picard-tools/2.12.1/share/java/picard.jar
-  SAMTOOLS=samtools
+  PICARD=/home/vetlinux01/.linuxbrew/Cellar/picard-tools/2.12.1/share/java/picard.jar
+  SAMTOOLS=/home/vetlinux01/.linuxbrew/bin/samtools
   BWA=/home/vetlinux01/.linuxbrew/bin/bwa
   BCFTOOLS=/home/vetlinux01/bin/bcftools
   # Lofreq executable
@@ -55,22 +60,43 @@ elif [ $USER == "vetlinux01" ] ; then
   VARSCAN=$BASEDIR/Tools/VarScan.v2.4.2.jar
   #VarDict java base dir
   VARDICT=$BASEDIR/Tools/VarDictJava/
+  # BRESEQ path
+  BRESEQ=/home/vetlinux01/.linuxbrew/Cellar/breseq/0.31.1/bin/breseq
+  GDTOOLS=/home/vetlinux01/.linuxbrew/Cellar/breseq/0.31.1/bin/gdtools
   # setup variables for SNPEFF
-  SNPEFF_DATA="/usr/local/Cellar/snpeff/4.3p/share/snpeff/data"
-  SNPEFF_CONF="/usr/local/Cellar/snpeff/4.3p/share/snpeff/snpEff.config"
+  SNPEFF_DATA="/home/vetlinux01/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/data"
+  SNPEFF_CONF="/home/vetlinux01/.linuxbrew/Cellar/snpeff/4.3p/share/snpeff/snpEff.config"
   SNPEFF="snpEff"
   SNPSIFT="SnpSift"
   # setup GATK path
-  GATK=~/Tools/GenomeAnalysisTK.jar
+  GATK=/home/vetlinux01/Tools/GenomeAnalysisTK.jar
   # setup path to BBDUK
-  BBDUK=~/Tools/bbmap_37.57/bbduk.sh
-  BBMERGE=~/Tools/bbmap_37.57/bbmerge.sh
-  ADAPTS=~/Tools/bbmap_37.57/resources/adapters.fa
+  BBDUK=/home/vetlinux01/Tools/bbmap_37.57/bbduk.sh
+  BBMERGE=/home/vetlinux01/Tools/bbmap_37.57/bbmerge.sh
+  BBREPAIR=/home/vetlinux01/Tools/bbmap_37.57/repair.sh
+  ADAPTS=/home/vetlinux01/Tools/bbmap_37.57/resources/adapters.fa
   # VPHASER2
-  VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt2.py
+  VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt.py
   BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
+  CONDAPATH=/Volumes/Temp/Lukas/miniconda/bin
 
 fi
 
-
-exit
+# if snpeff database not set up, do that
+if [ ! -d  "$SNPEFF_DATA/lcmv" ] ; then
+  SNP_LOG="snpeff.log"
+  echo creating new lcmv db entry at date >> $SNP_LOG
+  echo mkdir -p $SNPEFF_DATA/lcmv >> $SNP_LOG
+  mkdir -p $SNPEFF_DATA/lcmv
+  echo cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa >> $SNP_LOG
+  cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa
+  echo cp ${REFGENOME/%\.fasta/\.gff} $SNPEFF_DATA/lcmv/genes.gff >> $SNP_LOG
+  cp ${REFGENOME/%\.fasta/\.gff} $SNPEFF_DATA/lcmv/genes.gff
+  echo \echo '-e \"# LCMV\nlcmv.genome : lcmv\n\' \>\> $SNPEFF_CONF >> $SNP_LOG
+  echo -e "# LCMV\nlcmv.genome : lcmv\n" >> $SNPEFF_CONF
+  echo $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA >> $SNP_LOG
+  $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA lcmv 2>> $SNP_LOG
+  ES=$?
+  echo finished creating snpeff db at `date` with exit state $ES >> $SNP_LOG
+  [ $ES -eq 0 ] || exit $ES
+fi

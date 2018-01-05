@@ -8,24 +8,6 @@
 
 source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
 
-# if snpeff database not set up, do that
-if [ ! -d  "$SNPEFF_DATA/lcmv" ] ; then
-  SNP_LOG="snpeff.log"
-  echo creating new lcmv db entry at date >> $SNP_LOG
-  echo mkdir -p $SNPEFF_DATA/lcmv >> $SNP_LOG
-  mkdir -p $SNPEFF_DATA/lcmv
-  echo cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa >> $SNP_LOG
-  cp $REFGENOME $SNPEFF_DATA/lcmv/sequences.fa
-  echo cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff >> $SNP_LOG
-  cp ${REFGENOME/%\.fa/\.gff} $SNPEFF_DATA/lcmv/genome.gff
-  echo \echo '-e \"# LCMV\nlcmv.genome : LCMV\n\' \>\> $SNPEFF_CONF >> $SNP_LOG
-  echo -e "# LCMV\nlcmv.genome : LCMV\n" >> $SNPEFF_CONF
-  echo $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA >> $SNP_LOG
-  $SNPEFF build  -c $SNPEFF_CONF -gff3 -dataDir $SNPEFF_DATA lcmv 2>> $SNP_LOG
-  ES=$?
-  echo finished creating snpeff db at `date` with exit state $ES >> $SNP_LOG
-  [ $ES -eq 0 ] || exit $ES
-fi
 
 LIST=$3
 if [ ! -f $LIST  ] ; then
@@ -79,39 +61,22 @@ for i in 0.1 0.05 0.001 ; do
   LOGFILE=${FN}.log
   ERRORLOG=${FN}.err.log
 
-
-  echo startingrunning snpeff at `date` >> $LOGFILE
+  echo starting snpeff at `date` >> $LOGFILE
   echo  $SNPEFF -c $SNPEFF_CONF -dataDir $SNPEFF_DATA lcmv -no-intergenic -no "INTRAGENIC" -no-downstream -no-upstream -stats ${FN}_snpeff_log.html $LFVCF \> ${FN}_snpeff.vcf >> $LOGFILE
   $SNPEFF  -c $SNPEFF_CONF -dataDir $SNPEFF_DATA lcmv -no-intergenic  -no "INTRAGENIC" -no-downstream -no-upstream -stats ${FN}_snpeff_log.html $LFVCF > ${FN}_snpeff.vcf
 
   ES=$?
   echo finished snpeff at `date` with exit state $ES >> $LOGFILE
   [ $ES -eq 0 ] || exit $ES
-
-  $SNPSIFT extractFields ${FN}_snpeff.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" > ${FN}_snpeff.tab
+  # extract annotations and combine them with AFs and statistics
+  $SNPSIFT extractFields ${FN}_snpeff.vcf CHROM POS REF "ANN[0].GENE" "ANN[0].ALLELE" "ANN[0].EFFECT" "ANN[0].AA" "ANN[1].ALLELE" "ANN[1].EFFECT" "ANN[1].AA" | sed ' s/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' > ${FN}_snpeff.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%SB\t%DP\t%AF\t%PQ]\n"  $LFVCF > ${FN}.stats.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%AF]\n"  $LFVCF > ${FN}.afs.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%DP]\n"  $LFVCF > ${FN}.dp.tab
   $BCFTOOLS query -Hf "%CHROM\t%POS\t%REF\t%ALT[\t%PQ]\n"  $LFVCF > ${FN}.pq.tab
   paste ${FN}.afs.tab <(cut -f5- ${FN}.dp.tab) <(cut -f5- ${FN}.pq.tab) >  ${FN}.afs.dp.pq.tab
   python ${BASEDIR}/Scripts/get_positions_from_sync.py -a ${FN}.afs.dp.pq.tab -b ${FN}_snpeff.tab --both | cat <(head -1  ${FN}.afs.dp.pq.tab )  -  >  ${FN}.afs.anno.tab ;
-done
-for i in 0.1 0.05 0.001 ; do
-  LFVCF=lofreq2_all_samp_bed_norm_${i}.vcf
-  FN=`basename $LFVCF .vcf`
-  LOGFILE=${FN}.log
-  ERRORLOG=${FN}.err.log
-
-  sed ' s/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${FN}.afs.anno.tab >  ${FN}.afs.anno_alt.tab ;
-
-done
-
-for i in 0.1 0.05 0.001 ; do
-  LFVCF=lofreq2_all_samp_bed_norm_${i}.vcf
-  FN=`basename $LFVCF .vcf`
-  LOGFILE=${FN}.log
-  ERRORLOG=${FN}.err.log
-
-  sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${FN}.stats.tab >  ${FN}.stats_alt.tab ;
-
+  #
+  # sed ' s/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${FN}.afs.anno.tab >  ${FN}.afs.anno_alt.tab ;
+  # sed 's/DQ361065\.7/NP/g; s/DQ361065\.4/GP/g; s/DQ361066\.4/geneZ/g ; s/DQ361066\.7/geneL/g; s/\[[0-9]*\]//g' <  ${FN}.stats.tab >  ${FN}.stats_alt.tab ;
 done
