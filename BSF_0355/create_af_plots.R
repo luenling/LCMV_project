@@ -1,4 +1,4 @@
-library(ggplot2)
+# library(ggplot2)
 library(RColorBrewer)
 library("reshape2")
 #library("Gviz")
@@ -175,7 +175,7 @@ for (smps in smpls){
     layout(matrix(1:(length(smps)+2), ncol = 1), widths = 1, respect = FALSE)
     for (i in smps) {
       print(paste("plotting sample",i))
-      reg <- plot_AFs_depths(vcf,chrom,samples[i],chrom_len = chrom_lens[chrom])
+      reg <- plot_AFs_depths(vcf,chrom,i,chrom_len = chrom_lens[chrom])
     }
     par(mar = c(3, 4, 0, 4))
     plot(1,10,pch=NULL,xlim=c(1,chrom_lens[chrom]),ylim=c(-1,1),ylab=NA,axes=FALSE,xlab=chrom,bty="n")
@@ -188,7 +188,7 @@ for (smps in smpls){
     legend("bottom",c("-","synonymous_variant","missense_variant","stop_lost","stop_gained","start_lost","inframe_deletion","frameshift_variant","disruptive_inframe_deletion","alt. allele 1", "alt. allele 2","alt. allele 3"),
            col=c("black","green","red","orangered","orange","orangered4","pink","purple","purple",rep("black",3)),
            pch=c(rep(3,9),3,4,8),cex=0.75,ncol=4)
-    dev.copy2pdf(file=paste0("plot_S",smps[1],"_",smps[length(smps)],"_",chrom,".pdf")
+    dev.copy2pdf(file=paste0("plot_S",smps[1],"_",smps[length(smps)],"_",chrom,".pdf"))
   }
 }
 

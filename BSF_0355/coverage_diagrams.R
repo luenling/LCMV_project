@@ -56,3 +56,34 @@ q("no")
 l.covs.50bp.melted$sample[l.covs.50bp.melted$coverage > 50000]
 unique(s.covs.50bp.melted$sample[s.covs.50bp.melted$coverage > 100000])
 S31 S37 S38 S39
+
+setwd("~/LCMV_Data/Run_0355/")
+covs=read.table("bsf_0355_all.coverages",header=T)
+summary(covs)
+gene_ints=list(S=list(GP=c(79,1575),NP=c(1640,3316)),L=list(Z=c(90,326),L=c(565,7197)))
+covs$feat=sapply(seq(1,nrow(covs)),function (x) { chrom=as.character(covs$CHROM[x]); 
+  for (i in names(gene_ints[[chrom]])) {
+    if ( (covs$BPS[x] >=  gene_ints[[chrom]][[i]][1]) & (covs$BPS[x] <=  gene_ints[[chrom]][[i]][2])) {return(i)}
+    }    
+  return("-")
+  })
+
+min_cov_0.03=aggregate(covs[covs$feat!="-",3:(ncol(covs)-1)], by=list(covs$CHROM[covs$feat != "-"], covs$feat[covs$feat != "-"]),
+                       quantile,simplify = T,probs=c(0.03))
+median_cov_cds=aggregate(covs[covs$feat!="-",3:(ncol(covs)-1)], by=list(covs$CHROM[covs$feat != "-"]),
+                         median,simplify = T)
+mean_cov_cds=aggregate(covs[covs$feat!="-",3:(ncol(covs)-1)], by=list(covs$CHROM[covs$feat != "-"]),
+                       mean,simplify = T)
+median_cov_feat=aggregate(covs[covs$feat!="-",3:(ncol(covs)-1)], by=list(covs$CHROM[covs$feat != "-"], covs$feat[covs$feat != "-"]),
+                         median,simplify = T)
+mean_cov_feat=aggregate(covs[covs$feat!="-",3:(ncol(covs)-1)], by=list(covs$CHROM[covs$feat != "-"], covs$feat[covs$feat != "-"]),
+                       mean,simplify = T)
+
+write.csv(min_cov_0.03,"min_0.03_cov_genes.csv",row.names=F)
+write.csv(median_cov_cds,"median_cov_cds.csv",row.names=F)
+write.csv(mean_cov_cds,"mean_cov_cds.csv",row.names=F)
+write.csv(median_cov_feat,"median_cov_feat.csv",row.names=F)
+write.csv(mean_cov_feat,"mean_cov_feat.csv",row.names=F)
+
+
+
