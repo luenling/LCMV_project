@@ -59,8 +59,9 @@ for line in inf:
         chrom = snpgenie
         site = 2
     entries[site] = str(chromlen[chrom] - int(entries[site]) + 1)
-    entries[3] = entries[3].translate(revtab)
-    entries[3] = entries[4].translate(revtab)
+    entries[3] = entries[3].translate(revtab)[::-1]
+    alts = ",".split(entries[4])
+    entries[4] = ",".join([ x.translate(revtab)[::-1] for x in alts])
     print "\t".join(entries)
 
     
