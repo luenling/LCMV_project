@@ -31,6 +31,7 @@ chromlen=json.loads(vars(args)['chromlen'])
 vcf_file = vars(args)['vcffile']
 snpgenie = vars(args)['snpgenie']
 revtab=string.maketrans("ACTG","TGAC")
+rev_cols= False
 # open vcf file
 if not vcf_file or vcf_file == "STDIN":
     if not sys.stdin.isatty():
@@ -49,6 +50,9 @@ for line in inf:
         print line
         continue
     if (re.match("^\s*file",line) and snpgenie != False): # entry is snpgenie header
+        entries = line.split("\t")
+        if ((entries[-4],entries[-3],entries[-2],entries[-1]) == ("A","C","G","T")):
+            rev_cols = True
         print line
         continue
     entries = line.split("\t")
@@ -58,9 +62,12 @@ for line in inf:
     else:
         chrom = snpgenie
         site = 2
+        # reverse the acgt counts - last 4 colums normally ACGT checked above, if not do nothing
+        if (rev_cols):
+            (entries[-4],entries[-3],entries[-2],entries[-1]) = (entries[-1],entries[-2],entries[-3],entries[-4])
     entries[site] = str(chromlen[chrom] - int(entries[site]) + 1)
     entries[3] = entries[3].translate(revtab)[::-1]
-    alts = ",".split(entries[4])
+    alts = entries[4].split(",")
     entries[4] = ",".join([ x.translate(revtab)[::-1] for x in alts])
     print "\t".join(entries)
 
