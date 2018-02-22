@@ -66,7 +66,9 @@ for line in inf:
         if (rev_cols):
             (entries[-4],entries[-3],entries[-2],entries[-1]) = (entries[-1],entries[-2],entries[-3],entries[-4])
     entries[site] = str(chromlen[chrom] - int(entries[site]) + 1)
-    entries[3] = entries[3].translate(revtab)[::-1]
+    if not (snpgenie != False and len(entries[3]) == 3 ):
+        # do not do for codons in snpgenie
+        entries[3] = entries[3].translate(revtab)[::-1]
     alts = entries[4].split(",")
     entries[4] = ",".join([ x.translate(revtab)[::-1] for x in alts])
     print "\t".join(entries)
