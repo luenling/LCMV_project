@@ -25,14 +25,14 @@ REFS_rc[S]=$BASEDIR/References/S_revcom.fasta
 GTFS_rc[S]=$BASEDIR/References/S_revcom.gtf
 
 while read fn; do
-  SAMP = `bcftools view $fn | grep "#CHR" | cut -f 10`
+  SAMP=`bcftools view $fn | grep "#CHR" | cut -f 10`
   # create folder
   mkdir ${SAMP}_snpgenie
   cd ${SAMP}_snpgenie
   for CHR in L S; do
     # go through each chromosome
     bcftools view -i 'TYPE="snp"' $fn $CHR | bcftools norm -m +snps - > ${SAMP}_${CHR}.vcf
-    python ${BASEDIR}/LCMV_project/rev_comp_vcf.py ${SAMP}_${CHR}.vcf > ${SAMP}_${CHR}_rc.vcf
+    python ${BASEDIR}/LCMV_project/rev_comp_vcf.py --in ${SAMP}_${CHR}.vcf > ${SAMP}_${CHR}_rc.vcf
     # forward
     $SNPGENIE --fastafile ${REFS[$CHR]} --gtffile ${GTFS[$CHR]} --minfreq 0.001 --snpreport ${SAMP}_${CHR}.vcf --vcfformat 2
     mv SNPGenie_Results ${SAMP}_${CHR}_fw
@@ -41,8 +41,10 @@ while read fn; do
     mv SNPGenie_Results ${SAMP}_${CHR}_rc
     # combine results
 
-  done
+    # awk 'NR == 1; NR > 1 {print $0 | "sort -n"}'
 
+  done
+  cd ..
 done < $1
 
 
