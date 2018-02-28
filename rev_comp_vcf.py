@@ -31,7 +31,8 @@ chromlen=json.loads(vars(args)['chromlen'])
 vcf_file = vars(args)['vcffile']
 snpgenie = vars(args)['snpgenie']
 revtab=string.maketrans("ACTG","TGAC")
-rev_cols= False
+rev_cols = False # reverse ACTG columns in SNPgenie site output
+slid_win = False # reverse last site column coordinates in snpgenie sliding window for codon output
 # open vcf file
 if not vcf_file or vcf_file == "STDIN":
     if not sys.stdin.isatty():
@@ -53,6 +54,8 @@ for line in inf:
         entries = line.split("\t")
         if ((entries[-4],entries[-3],entries[-2],entries[-1]) == ("A","C","G","T")):
             rev_cols = True
+        if ( re.match("last",entries[4])):
+            slid_win = True
         print line
         continue
     entries = line.split("\t")
@@ -66,11 +69,13 @@ for line in inf:
         if (rev_cols):
             (entries[-4],entries[-3],entries[-2],entries[-1]) = (entries[-1],entries[-2],entries[-3],entries[-4])
     entries[site] = str(chromlen[chrom] - int(entries[site]) + 1)
-    if not (snpgenie != False and len(entries[3]) == 3 ):
+    if (slid_win):
+        entries[4] = str(chromlen[chrom] - int(entries[4]) + 1)
+    if not (snpgenie != False and len(entries[3]) == 3 ): # all except SNPgenie with codon sites
         # do not do for codons in snpgenie
         entries[3] = entries[3].translate(revtab)[::-1]
-    alts = entries[4].split(",")
-    entries[4] = ",".join([ x.translate(revtab)[::-1] for x in alts])
+        alts = entries[4].split(",")
+        entries[4] = ",".join([ x.translate(revtab)[::-1] for x in alts])
     print "\t".join(entries)
 
     
