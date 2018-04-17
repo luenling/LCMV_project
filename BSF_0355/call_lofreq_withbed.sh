@@ -46,7 +46,7 @@ then
   mv all_samp_bed.vcf all_samp_bed_tmp.vcf
   bgzip all_samp_bed_tmp.vcf
   tabix -f -p vcf all_samp_bed_tmp.vcf.gz
-  $BCFTOOLS annotate -a $DPS -c "+FORMAT/DP" all_samp_bed_tmp.vcf.gz > all_samp_bed.vcf
+  $BCFTOOLS annotate -a $DPS --collapse all -c "+FORMAT/DP,FORMAT/AD2:=FORMAT/AD" all_samp_bed_tmp.vcf.gz > all_samp_bed.vcf
 fi
 
 

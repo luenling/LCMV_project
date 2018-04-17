@@ -53,13 +53,13 @@ elif [ $USER == "vetlinux01" ] ; then
   PICARD=/home/vetlinux01/.linuxbrew/Cellar/picard-tools/2.12.1/share/java/picard.jar
   SAMTOOLS=/home/vetlinux01/.linuxbrew/bin/samtools
   BWA=/home/vetlinux01/.linuxbrew/bin/bwa
-  BCFTOOLS=/home/vetlinux01/bin/bcftools
+  BCFTOOLS=/home/vetlinux01/.linuxbrew/bin/bcftools
   # Lofreq executable
   LOFREQ=$BASEDIR/Tools/lofreq_star-2.1.2/bin/lofreq
   #varscan2
   VARSCAN=$BASEDIR/Tools/VarScan.v2.4.2.jar
   #VarDict java base dir
-  VARDICT=$BASEDIR/Tools/VarDictJava/
+  VARDICT=$BASEDIR/Tools/VarDictJava
   # BRESEQ path
   BRESEQ=/home/vetlinux01/.linuxbrew/Cellar/breseq/0.31.1/bin/breseq
   GDTOOLS=/home/vetlinux01/.linuxbrew/Cellar/breseq/0.31.1/bin/gdtools

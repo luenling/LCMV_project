@@ -14,10 +14,10 @@ while read file; do
   BN=${RUN_ID}"_"$SM
   ERRLOG=$BN"_vardict.err.log"
   echo start vardict at `date` >> $LOGFILE
-  echo $VARDICT/VarDict_java -G $REFGENOME -th 20 -f 0.001 -m 10 -P 10 -B 3 -b $file -c 1 -S 2 -E 3 -z 1 $BASEDIR/References/viruses_short.bed \| $VARDICT/VarDict/teststrandbias.R \| $VARDICT/VarDict/var2vcf_valid.pl -N $SM -E -f 0.001 \| bgzip -c  \> ${BN}_vardict_filt.vcf.gz >> $LOGFILE
-  $VARDICT/VarDict_java -G $REFGENOME -th 20 -f 0.001 -m 10 -P 10 -B 3 -b $file -c 1 -S 2 -E 3 -z 1 $BASEDIR/References/viruses_short.bed | $VARDICT/VarDict/teststrandbias.R | $VARDICT/VarDict/var2vcf_valid.pl -N $SM -E -f 0.001 | bgzip -c  > ${BN}_vardict_filt.vcf.gz
+  echo $VARDICT/VarDict_java -G $REFGENOME -th 20 -f 0.001 -m 10 -P 10 -B 3 -b $file -c 1 -S 2 -E 3 -z 1 $BASEDIR/References/viruses_short.bed \| $VARDICT/VarDict/teststrandbias.R \| $VARDICT/VarDict/var2vcf_valid.pl -A -N $SM -E -f 0.001 \| sed 's/VCFv4.1/VCFv4.2/; s/\([AV][FD]\),Number=1/\1,Number=A/; s/AD,Number=\./AD,Number=R/;' \| bgzip -c  \> ${BN}_vardict_filt.vcf.gz >> $LOGFILE
+  $VARDICT/VarDict_java -G $REFGENOME -th 20 -f 0.001 -m 10 -P 10 -B 3 -b $file -c 1 -S 2 -E 3 -z 1 $BASEDIR/References/viruses_short.bed | $VARDICT/VarDict/teststrandbias.R | $VARDICT/VarDict/var2vcf_valid.pl  -A -N $SM -E -f 0.001 |  sed 's/VCFv4.1/VCFv4.2/; s/\([AV][FD]\),Number=1/\1,Number=A/; s/AD,Number=\./AD,Number=R/;'  | bgzip -c  > ${BN}_vardict_filt.vcf.gz
   ES=$?
-  echo finished lofreq at `date` with exit state $ES >> $LOGFILE
+  echo finished vardict at `date` with exit state $ES >> $LOGFILE
   echo tabix -p vcf ${BN}_vardict_filt.vcf.gz >> $LOGFILE
   tabix -p vcf ${BN}_vardict_filt.vcf.gz
   echo $BCFTOOLS norm -f $REFGENOME -m+any ${BN}_vardict_filt.vcf.gz \| $BCFTOOLS view --apply-filters "PASS" -O z - \>  ${BN}_vardict_filt_norm.vcf.gz >> $LOGFILE
@@ -33,13 +33,13 @@ DPS=$2
 if [[ -e $DPS ]];
 then
   mv all_samps_vardict_filt_norm.vcf all_samps_vardict_filt_tmp.vcf
-  bgzip all_samps_vardict_filt_tmp.vcf
+  bgzip -f all_samps_vardict_filt_tmp.vcf
   tabix -f -p vcf all_samps_vardict_filt_tmp.vcf.gz
-  echo $BCFTOOLS annotate -a $DPS -c "+FORMAT/DP" all_samps_vardict_filt_tmp.vcf.gz \> all_samps_vardict_filt_norm.vcf >> $LOGFILE
-  $BCFTOOLS annotate -a $DPS -c "+FORMAT/DP" all_samps_vardict_filt_tmp.vcf.gz > all_samps_vardict_filt_norm.vcf
+  echo $BCFTOOLS annotate --collapse all -a $DPS -c \"+FORMAT/DP,FORMAT/AD2:=FORMAT/AD\" all_samps_vardict_filt_tmp.vcf.gz \| sed \''/ID=AD2/ {s/\".*\"/\"Alleleic Depths as from samtools mpileup\"/;s/Number\=R/Number\=\./}' \' \> all_samps_vardict_filt_norm.vcf >> $LOGFILE
+  $BCFTOOLS annotate --collapse all -a $DPS -c "+FORMAT/DP,FORMAT/AD2:=FORMAT/AD" all_samps_vardict_filt_tmp.vcf.gz | sed '/ID=AD2/ {s/\".*\"/\"Alleleic Depths as from samtools mpileup\"/;s/Number\=R/Number\=\./}' > all_samps_vardict_filt_norm.vcf
 fi
 
-for i in 0.1 0.05 0.001 ; do
+for i in 0.1 0.05 0.01 0.001 ; do
   LFVCF=all_samps_vardict_filt_norm_${i}.vcf
   $BCFTOOLS view -i "AF>$i" all_samps_vardict_filt_norm.vcf | $BCFTOOLS norm -f $REFGENOME -m+any - > $LFVCF
   FN=`basename $LFVCF .vcf`
