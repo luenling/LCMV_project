@@ -193,7 +193,13 @@ for (smps in smpls){
 }
 
 
+q(save="no")
 
+vcf_file="/Volumes/vetlinux01/LCMV/Run_0355/VarDict_2/all_samps_vardict_filt_norm_0.001_snpeff.vcf"
+scan_form=c("DP","AF","AD")
+scan_inf="ANN"
+svp <- ScanVcfParam(info=scan_inf,geno=scan_form)
+vcf <- readVcf( vcf_file,"viruses",svp )
+geno(vcf)[["AD"]][4,c("S01")]
 
-
-
+library(adegenet)
