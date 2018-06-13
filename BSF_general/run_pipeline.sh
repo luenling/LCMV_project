@@ -95,29 +95,29 @@ source $(dirname $BASH_SOURCE)"/bsf_params.sh"
 #   java -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam 2>> bqsr.err.log
 # done < bam.list
 
-cd $RUNBASE/BQSR
-ls "*.bam" > bam_list.txt
-bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf.gz
-
-exit 0
-
-
-
-ls ../*viral_rh.bam | xargs -L 1 -P 5 -I{} bash -c "genomeCoverageBed -d -ibam '{}'  > '{}'.coverage"
-
-echo -e "CHROM\tBPS" | cat - <(cut -f 1,2 S_10_S19422_sorted_viral_rh.bam.coverage) > bsf_0277_all.coverages
-
-for i in *viral_rh.bam.coverage; do A=${i/_S19*}; echo $A | cat - <(cut -f 3 $i) | paste  bsf_0277_all.coverages - > temp; mv -f temp bsf_0277_all.coverages; done
-
-java -Xmx10g -jar ~/LCMV_project/Tools/GenomeAnalysisTK.jar -T DepthOfCoverage  -nt 10 -R ~/LCMV_project/References/viruses.fasta -o allbams.depth -I bam.list  --countType COUNT_FRAGMENTS --omitIntervalStatistics --omitPerSampleStats
-
-~/LCMV_project/Run_0277/Mappings/Maxcov10K  > for i in ../*_rh.bam; do python ../../../Scripts/downsample_to_cov.py -b $i -c 10000; samtools index `basename $i .bam`_max_cov_10000.bam; done
-
-nohup bash -c ' for i in ../*_max_cov_10000.bam; do bash \
-/Volumes/Temp/Lukas/LCMV_project/Scripts/call_lofreq.sh $i; done; \
-bash /Volumes/Temp/Lukas/LCMV_project/Scripts/combine_lofreq_vars.sh;\
-bash /Volumes/Temp/Lukas/LCMV_project/Scripts/call_lofreq_withbed.sh all_samp_bcf.bed'
-
- ~/LCMV_project/Tools/VarDictJava/VarDict_java -G ../../References/viruses_short.fasta -f 0.01 -b ../BQSR/BSF_0355_S10_real_viterbi_IDQS_bqsr.bam -c 1 -S 2 -E 3 -z 1 viruses.bed | teststrandbias.R | var2vcf_valid.pl -N S10 -E -f 0.01 > test_S10.vcf
-
-java -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -BQSR recal_afs_0.005.tab -plots BQSR.pdf
+# cd $RUNBASE/BQSR
+# ls "*.bam" > bam_list.txt
+# bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf.gz
+#
+# exit 0
+#
+#
+#
+# ls ../*viral_rh.bam | xargs -L 1 -P 5 -I{} bash -c "genomeCoverageBed -d -ibam '{}'  > '{}'.coverage"
+#
+# echo -e "CHROM\tBPS" | cat - <(cut -f 1,2 S_10_S19422_sorted_viral_rh.bam.coverage) > bsf_0277_all.coverages
+#
+# for i in *viral_rh.bam.coverage; do A=${i/_S19*}; echo $A | cat - <(cut -f 3 $i) | paste  bsf_0277_all.coverages - > temp; mv -f temp bsf_0277_all.coverages; done
+# 
+# java -Xmx10g -jar ~/LCMV_project/Tools/GenomeAnalysisTK.jar -T DepthOfCoverage  -nt 10 -R ~/LCMV_project/References/viruses.fasta -o allbams.depth -I bam.list  --countType COUNT_FRAGMENTS --omitIntervalStatistics --omitPerSampleStats
+#
+# ~/LCMV_project/Run_0277/Mappings/Maxcov10K  > for i in ../*_rh.bam; do python ../../../Scripts/downsample_to_cov.py -b $i -c 10000; samtools index `basename $i .bam`_max_cov_10000.bam; done
+#
+# nohup bash -c ' for i in ../*_max_cov_10000.bam; do bash \
+# /Volumes/Temp/Lukas/LCMV_project/Scripts/call_lofreq.sh $i; done; \
+# bash /Volumes/Temp/Lukas/LCMV_project/Scripts/combine_lofreq_vars.sh;\
+# bash /Volumes/Temp/Lukas/LCMV_project/Scripts/call_lofreq_withbed.sh all_samp_bcf.bed'
+#
+#  ~/LCMV_project/Tools/VarDictJava/VarDict_java -G ../../References/viruses_short.fasta -f 0.01 -b ../BQSR/BSF_0355_S10_real_viterbi_IDQS_bqsr.bam -c 1 -S 2 -E 3 -z 1 viruses.bed | teststrandbias.R | var2vcf_valid.pl -N S10 -E -f 0.01 > test_S10.vcf
+#
+# java -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -BQSR recal_afs_0.005.tab -plots BQSR.pdf
