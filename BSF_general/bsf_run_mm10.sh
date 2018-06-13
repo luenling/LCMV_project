@@ -9,7 +9,7 @@
 #--------------
 
 
-source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+source $(dirname $BASH_SOURCE)"/bsf_params.sh"
 
 OUTDIR='MAPPING/'
 if [ $2 ]; then
@@ -41,7 +41,7 @@ ES=$?
 echo finished bwa mem mapping at `date` with exit state $ES >> $LOGFILE
 [ $ES -eq 0 ] || exit $ES
 $SAMTOOLS index ${FN}_sorted.bam
-{
+{ 
 #echo flagstat >> $LOGFILE
 $SAMTOOLS flagstat ${FN}_sorted.bam >> $STATS/$FN"_full.flagstat"
 #echo idxstats >> $LOGFILE

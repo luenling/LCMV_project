@@ -3,12 +3,14 @@
 # created: 10/30/2017, 9:17:18 AM
 # Changed: Time-stamp: <10/30/2017, 9:21:31 AM>
 # Variables for scripts, looks for different users (vetgrid01 or vetlinux01)
+# set runid with export RUN_ID=0355
+# set runid with export RUN_ID=
 shopt -s extglob
 
 #if [ -z ${RUN_ID+z} ] ; do exit 10 "You must provie a value for RUN_ID, eg. export RUN_ID=0355" ; done
 BASEDIR=$(dirname $BASH_SOURCE)
-BASEDIR=${BASEDIR%\/LCMV_project\/BSF_0355}
-RUN_ID=0355
+BASEDIR=${BASEDIR%\/LCMV_project\/BSF_general}
+
 
 SCRIPTS=${BASEDIR}/LCMV_project/BSF_general/
 REFGENOME=$BASEDIR/References/viruses_short.fasta
