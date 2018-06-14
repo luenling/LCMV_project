@@ -7,14 +7,16 @@
 # set runid with export RUN_ID=
 shopt -s extglob
 
-#if [ -z ${RUN_ID+z} ] ; do exit 10 "You must provie a value for RUN_ID, eg. export RUN_ID=0355" ; done
+if [ -z ${RUNBASE+z} ] ; then RUNBASE=`pwd` ; fi
+if [ -z ${RUN_ID+z} ] ; then RUN_ID=${RUNBASE//*_/} ; fi
+
 BASEDIR=$(dirname $BASH_SOURCE)
 BASEDIR=${BASEDIR%\/LCMV_project\/BSF_general}
 
 
 SCRIPTS=${BASEDIR}/LCMV_project/BSF_general/
 REFGENOME=$BASEDIR/References/viruses_short.fasta
-REFGENOME_FULL=$BASEDIR/References/viruses_short_Mus_musculus.GRCm38.fa.gz
+REFGENOME_FULL=$BASEDIR/References/viruses_short_Mus_musculus.GRCm38.dna.toplevel.fa.gz
 PRIMERS=$BASEDIR/References/primers.fna
 
 # setup everything for vetgrid01

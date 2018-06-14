@@ -19,6 +19,8 @@ fi
 
 STATS=${OUTDIR}/Stats
 if [ ! -d $STATS ]; then mkdir $STATS ; fi
+LOGFILE=${OUTDIR}/$OUT.log
+ERRORFILE=${OUTDIR}/$OUT.err.log
 
 FN=`basename $1 .gz`
 FN=`basename $FN _1.fq`
@@ -34,20 +36,21 @@ FN=${OUTDIR}/$FN
 LOGFILE=${FN}.log
 ERRORLOG=${FN}.err.log
 echo "start bwa mem  at" `date` >> $LOGFILE
-echo $BWA mem -R $RG -k 17 -r 1.25 -M -t 17 $REFGENOME_FULL $1 $R2  2\>\> $ERRORLOG  \| $SAMTOOLS view -Shb - \| $SAMTOOLS sort -T ${FN}_temp - \> $FN"_sorted.bam"  >> $LOGFILE
+echo $BWA mem -R $RG -k 17 -r 1.25 -M -t 17 $REFGENOME_FULL $1 $R2  2\>\> $ERRORLOG  \| $SAMTOOLS view -Shb - \| $SAMTOOLS sort --threads 5 -m 4G -T ${FN}_temp - \> $FN"_sorted.bam"  >> $LOGFILE
 
-$BWA mem -R $RG  -k 17 -r 1.25 -M -t 17 $REFGENOME_FULL $1 $R2 2>> $ERRORLOG | $SAMTOOLS view -Shb - |  $SAMTOOLS sort -T ${FN}_temp - > $FN"_sorted.bam"
+$BWA mem -R $RG  -k 17 -r 1.25 -M -t 17 $REFGENOME_FULL $1 $R2 2>> $ERRORLOG | $SAMTOOLS view -Shb - |  $SAMTOOLS sort --threads 5 -m 4G -T ${FN}_temp - > $FN"_sorted.bam"
 ES=$?
 echo finished bwa mem mapping at `date` with exit state $ES >> $LOGFILE
 [ $ES -eq 0 ] || exit $ES
 $SAMTOOLS index ${FN}_sorted.bam
-{ 
+BN=`basename $FN`
+{
 #echo flagstat >> $LOGFILE
-$SAMTOOLS flagstat ${FN}_sorted.bam >> $STATS/$FN"_full.flagstat"
+$SAMTOOLS flagstat ${FN}_sorted.bam > ${STATS}"_full"/$BN"_full.flagstat"
 #echo idxstats >> $LOGFILE
-$SAMTOOLS idxstats ${FN}_sorted.bam >> $STATS/$FN"_full.idxstats"
+$SAMTOOLS idxstats ${FN}_sorted.bam > ${STATS}"_full"/$BN"_full.idxstats"
 #echo stats >> $LOGFILE
-$SAMTOOLS stats ${FN}_sorted.bam >> $STATS/$FN"_full.stats"
+$SAMTOOLS stats ${FN}_sorted.bam > ${STATS}"_full"/$BN"_full.stats"
 } &
 # extract only the viral genomes
 $SAMTOOLS view -bh -f 2 -F 256 ${FN}_sorted.bam 'L' 'S' > ${FN}_sorted_viral.bam
@@ -71,11 +74,7 @@ echo finished reheader at `date` with exit state $ES >> $LOGFILE
 #rm -f ${FN}.bam  2>> $ERRORLOG
 
 $SAMTOOLS index ${FN}_rh.bam
-
-{
-
-$SAMTOOLS flagstat ${FN}_rh.bam >> $STATS/${FN}_rh.flagstat
-$SAMTOOLS idxstats ${FN}_rh.bam > $STATS/${FN}_rh.idxstats
-$SAMTOOLS stats ${FN}_rh.bam > $STATS/${FN}_rh.stats
-
-} &
+BN=`basename $FN`
+$SAMTOOLS flagstat ${FN}_rh.bam > ${STATS}"_viral"/${BN}_rh.flagstat
+$SAMTOOLS idxstats ${FN}_rh.bam > ${STATS}"_viral"/${BN}_rh.idxstats
+$SAMTOOLS stats ${FN}_rh.bam > ${STATS}"_viral"/${BN}_rh.stats

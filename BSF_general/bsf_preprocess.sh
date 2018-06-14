@@ -19,21 +19,21 @@ FN=`basename $FN _1.fastq`
 OUT=$FN
 #ls ~/LCMV_project/Run_0277/biomedical-sequencing.at/dna/BSF_0277_HFNMYBBXX_5_samples_41fc5015a64547a9a8193a1d6de705d2/*.bam | xargs -P 5 -L 1 ../../Scripts/bsf0277_bbduk_trim_cutadapts.sh  > run.log &
 
-LOGFILE=$OUT.log
-ERRORFILE=$OUT.err.log
 OUTDIR='FASTQ/'
 if [ $2 ]; then
     OUTDIR=$2'/'
     if [ ! -d $2 ]; then mkdir $2 ; fi
 fi
+LOGFILE=${OUTDIR}/$OUT.log
+ERRORFILE=${OUTDIR}/$OUT.err.log
 
 OUT=${OUTDIR}${OUT}
 STATDIR=${OUTDIR}/Stats
 if [ ! -d $STATDIR ]; then mkdir $STATDIR ; fi
 
 echo trimming and removing adaptors at `date` >> ${LOGFILE}
-echo $SAMTOOLS fastq $1 | $BBDUK -Xmx4g in=stdin.fq out1=${OUT}_npa_1.fq.gz out2=${OUT}_npa_2.fq.gz qtrim=r minlen=75 ktrim=r ref=\"$ADAPTS\" k=21 mink=11 trimq=15 overwrite=t tbo=t tpe=t lhist=$STATDIR/${OUT}.bbuk.lhist stats=$STATDIR/${OUT}.bbuk.stats \>\> ${LOGFILE} 2\> ${ERRORFILE} >> ${LOGFILE}
-$SAMTOOLS fastq $1 | $BBDUK -Xmx4g in=stdin.fq out1=${OUT}_npa_1.fq.gz out2=${OUT}_npa_2.fq.gz qtrim=r minlen=55 ktrim=r ref=\"$ADAPTS\" k=21 mink=11 trimq=15 overwrite=t tbo=t tpe=t lhist=$STATDIR/${OUT}.bbuk.lhist stats=$STATDIR/${OUT}.bbuk.stats >> ${LOGFILE} 2> ${ERRORFILE}
+echo $SAMTOOLS fastq $1 | $BBDUK -Xmx4g in=stdin.fq out1=${OUT}_npa_1.fq.gz out2=${OUT}_npa_2.fq.gz qtrim=r minlen=75 ktrim=r ref=\"$ADAPTS\" int=t k=21 mink=11 trimq=15 overwrite=t tbo=t tpe=t lhist=$STATDIR/${FN}.bbuk.lhist stats=$STATDIR/${FN}.bbuk.stats \>\> ${LOGFILE} 2\> ${ERRORFILE} >> ${LOGFILE}
+$SAMTOOLS fastq $1 | $BBDUK -Xmx4g in=stdin.fq out1=${OUT}_npa_1.fq.gz out2=${OUT}_npa_2.fq.gz qtrim=r minlen=55 ktrim=r ref=\"$ADAPTS\" int=t k=21 mink=11 trimq=15 overwrite=t tbo=t tpe=t lhist=$STATDIR/${FN}.bbuk.lhist stats=$STATDIR/${FN}.bbuk.stats >> ${LOGFILE} 2> ${ERRORFILE}
 ES=$?
 echo finished at `date` with exit state $ES >> $LOGFILE
 [ $ES -eq 0 ] || exit $ES
