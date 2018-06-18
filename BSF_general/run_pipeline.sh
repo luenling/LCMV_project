@@ -9,6 +9,8 @@
 source $(dirname $BASH_SOURCE)"/bsf_params.sh"
 LOGFILE=$RUNBASE/pipeline.log
 ERRORLOG=$RUNBASE/pipeline.err.log
+export RUNBASE
+export RUN_ID
 
 # # go through all bam files to create fastqs
 #  for i in Data/BSF_*_S_[1-9]*.bam ; do
@@ -68,54 +70,75 @@ ERRORLOG=$RUNBASE/pipeline.err.log
 #   samtools index `basename $i .bam`_max_cov_50K.bam;
 # done
 
-ls $RUNBASE/MAPPING/*_rh.bam > bam_list.txt
-echo $SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 100000000 -u -k DP,AD,ADF,ADR,SP -o  all_samps_samtools.vcf -b  bam_list.txt >> $LOGFILE
-$SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 100000000 -u -k DP,AD,ADF,ADR,SP -o  all_samps_samtools.vcf -b  bam_list.txt
-bgzip all_samps_samtools.vcf
-tabix -p vcf all_samps_samtools.vcf.gz
+# ls $RUNBASE/MAPPING/*_rh.bam > bam_list.txt
+# echo $SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 100000000 -u -t DP,AD,ADF,ADR,SP -o  all_samps_samtools.vcf -b  bam_list.txt >> $LOGFILE
+# $SAMTOOLS mpileup -f $REFGENOME -q 30 -Q 30 -I -v -d 100000000 -u -t DP,AD,ADF,ADR,SP -o  all_samps_samtools.vcf -b  bam_list.txt
+# bgzip all_samps_samtools.vcf
+# tabix -p vcf all_samps_samtools.vcf.gz
 
 # Do lofreq 2 calling
-mkdir -p $RUNBASE/LOFREQ2
-cd LOFREQ2
-bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf.gz
+# mkdir -p $RUNBASE/LOFREQ2
+# cd LOFREQ2
+# bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf.gz
+# cd $RUNBASE
+# echo mkdir -p $RUNBASE/BQSR >> $LOGFILE
+# mkdir -p $RUNBASE/BQSR
+# echo cd $RUNBASE/BQSR >> $LOGFILE
+# cd $RUNBASE/BQSR
+# echo  ls $RUNBASE/LOFREQ2/*.bam \> bam.list >> $LOGFILE
+# ls $RUNBASE/LOFREQ2/*.bam > bam.list
+# echo vcf2bed \< $RUNBASE/LOFREQ2/lofreq2_all_samp_bed_norm_0.05.vcf \| cut -f 1-5 - \> lofreq2_all_samp_bed_norm_0.05_5col.bed >> $LOGFILE
+# vcf2bed < $RUNBASE/LOFREQ2/lofreq2_all_samp_bed_norm_0.05.vcf | cut -f 1-5 - > lofreq2_all_samp_bed_norm_0.05_5col.bed
+# # quick and dirty workaround
+# JAVA=/usr/lib/jvm/java-8-oracle/bin/java
+# echo $JAVA -Xmx30G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -o recal_afs_0.005.tab -I bam.list >> $LOGFILE
+# $JAVA -Xmx30G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -o recal_afs_0.005.tab -I bam.list 2>> bqsr.err.log
+# echo $JAVA -Xmx30G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -BQSR recal_afs_0.005.tab -I bam.list -o recal_afs_0.005_secondpass.table >> $LOGFILE
+# $JAVA -Xmx30G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -BQSR recal_afs_0.005.tab -I bam.list -o recal_afs_0.005_secondpass.table  2>> bqsr.err.log
+# echo $JAVA -Xmx30G -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -before recal_afs_0.005.tab -after recal_afs_0.005_secondpass.table -plots BQSR.pdf >> $LOGFILE
+# $JAVA -Xmx30G -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -before recal_afs_0.005.tab -after recal_afs_0.005_secondpass.table -plots BQSR.pdf  2>> bqsr.err.log
+# while read p || [[ -n $p ]]; do
+#   FN=`basename $p .bam`
+#   echo $JAVA -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam >> $LOGFILE
+#   $JAVA -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam 2>> bqsr.err.log
+# done < bam.list
+#
+# echo clipping overlaps at  `date` >> $LOGFILE
+# mkdir -p $RUNBASE/CLIPOVERLAP
+# cd $RUNBASE/CLIPOVERLAP
+# for BF in $RUNBASE/BQSR/*_bqsr.bam ; do
+#   echo bam clipOverlap --in $BF --out `basename $BF .bam`_co.bam --stats >> $LOGFILE
+#   bam clipOverlap --in $BF --out  `basename $BF .bam`_co.bam --stats >> $LOGFILE 2>> clip.overlap.err.log
+#   samtools index `basename $BF .bam`_co.bam
+# done
+# echo done with clipping at `date`  >> $LOGFILE
+# mkdir -p $RUNBASE/LOFREQ2_bqsr
+# cd $RUNBASE/LOFREQ2_bqsr
+# ls $RUNBASE/CLIPOVERLAP/*co.bam > bam_list.txt
+# echo running LOFREQ2 on bqsr and co files `date` >> $LOGFILE
+# bash $SCRIPTS/do_full_lofreq.sh ./bam_list.txt $RUNBASE/all_samps_samtools.vcf.gz ./bam_list.txt
+# cd $RUNBASE
+# bash $SCRIPTS/strand_specific_depths.sh $RUNBASE/LOFREQ2_bqsr/bam_list.txt
+# mkdir $RUNBASE/VARDICT
+# cd $RUNBASE/VARDICT
+# echo ls $RUNBASE/BQSR/*_bqsr.bam \> bam_files.txt >> $LOGFILE
+# ls $RUNBASE/BQSR/*_bqsr.bam > bam_files.txt
+# echo bash $SCRIPTS/call_vardict.sh ./bam_files.txt $RUNBASE/all_samps_samtools.vcf.gz >> $LOGFILE
+# bash $SCRIPTS/call_vardict.sh ./bam_files.txt $RUNBASE/all_samps_samtools.vcf.gz
+# cd $RUNBASE
+mkdir $RUNBASE/SNP_GENIE_VARDICT
+cd $RUNBASE/SNP_GENIE_VARDICT
+ls $RUNBASE/VARDICT/*_S*_vardict_filt_norm.vcf.gz > vcfs.lst
+bash $SCRIPTS/run_snpgenie.sh vcfs.lst >> $RUNBASE/SNP_GENIE_VARDICT/snpgenie.log 2>> $RUNBASE/SNP_GENIE_VARDICT/snpgenie.err.log
+cd  $RUNBASE
 
-echo mkdir -p $RUNBASE/BQSR >> $LOGFILE
-mkdir -p $RUNBASE/BQSR
-echo cd $RUNBASE/BQSR >> $LOGFILE
-cd $RUNBASE/BQSR
-echo  ls $RUNBASE/LOFREQ2/*.bam \> bam.list >> $LOGFILE
-ls $RUNBASE/LOFREQ2/*.bam > bam.list
-echo vcf2bed \< $RUNBASE/LOFREQ2/lofreq2_all_samp_bed_norm_0.05.vcf \| cut -f 1-5 - \> lofreq2_all_samp_bed_norm_0.05_5col.bed $LOGFILE
-vcf2bed < $RUNBASE/LOFREQ2/lofreq2_all_samp_bed_norm_0.05.vcf | cut -f 1-5 - > lofreq2_all_samp_bed_norm_0.05_5col.bed
-
-echo java -Xmx30G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -o recal_afs_0.005.tab -I bam.list >> $LOGFILE
-java -Xmx30G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -o recal_afs_0.005.tab -I bam.list 2>> bqsr.err.log
-echo java -Xmx30G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -BQSR recal_afs_0.005.tab -I bam.list -o recal_afs_0.005_secondpass.table >> $LOGFILE
-java -Xmx30G -jar $GATK -T BaseRecalibrator  -R $REFGENOME -knownSites lofreq2_all_samp_bed_norm_0.05_5col.bed -BQSR recal_afs_0.005.tab -I bam.list -o recal_afs_0.005_secondpass.table  2>> bqsr.err.log
-echo java -Xmx30G -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -before recal_afs_0.005.tab -after recal_afs_0.005_secondpass.table -plots BQSR.pdf >> $LOGFILE
-java -Xmx30G -jar $GATK -T AnalyzeCovariates -R $REFGENOME  -before recal_afs_0.005.tab -after recal_afs_0.005_secondpass.table -plots BQSR.pdf  2>> bqsr.err.log
-while read p || [[ -n $p ]]; do
-  FN=`basename $p .bam`
-  echo java -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam >> $LOGFILE
-  java -jar $GATK -T PrintReads  -R $REFGENOME -dt NONE -BQSR recal_afs_0.005.tab -I $p -o ${FN}_bqsr.bam 2>> bqsr.err.log
-done < bam.list
-
-echo clipping overlaps at  `date` >> $LOGFILE
-mkdir -p CLIPOVERLAP
-cd CLIPOVERLAP
-for BF in $RUNBASE/BQSR/*_bqsr.bam ; do
-  echo bam clipOverlap --in $BF --out `basename $BF .bam`_co.bam --stats >> $LOGFILE
-  bam clipOverlap --in $BF --out  `basename $BF .bam`_co.bam --stats >> $LOGFILE 2>> clip.overlap.err.log
-  samtools index `basename $BF .bam`_co.bam
-done
-echo done with clipping at `date`  >> $LOGFILE
-mkdir -p LOFREQ2_bqsr
-cd LOFREQ2_bqsr
-ls $RUNBASE/CLIPOVERLAP/*co.bam > bam_list.txt
-echo running LOFREQ2 on bqsr and co files `date` >> $LOGFILE
-bash $SCRIPTS/do_full_lofreq.sh ./bam_list.txt ../all_samps_samtools.vcf.gz
-cd $RUNBASE
-
+mkdir $RUNBASE/Qualimap
+cd $RUNBASE/Qualimap
+ls $RUNBASE/BQSR/*bqsr.bam | sed -E 's/(.+_)(S[0-9]+)(_.+)/\2\t\1\2\3/g;' > bam.files
+~/Tools/qualimap_v2.2.1/qualimap multi-bamqc -d bam.files -r -c -gff $BASEDIR/References/viruses_short.gff -outdir strand_spec_rev -outfile report_strand_spec_rev -p strand-specific-reverse -outformat PDF:HTML  >> str_spec_rev_bamqc.log  2>&1
+mv $RUNBASE/BQSR/*_stats .
+cd $RUNBASE/
+exit
 # cd $RUNBASE/BQSR
 # ls "*.bam" > bam_list.txt
 # bash $SCRIPTS/do_full_lofreq.sh ../bam_list.txt ../all_samps_samtools.vcf.gz

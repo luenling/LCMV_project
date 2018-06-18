@@ -3,7 +3,7 @@
 # test if there is exactly one argument and whether it is a file to be read
 args = commandArgs(trailingOnly=TRUE)
 if (length(args) != 2){
-  write("An 2 input filename containing coverage data for the plus and minus strand must be supplied.\n",stderr())
+  write("2 input filenames containing coverage data for the plus and minus strand must be supplied.\n",stderr())
   quit("no",status=1)
 }
 pfile = args[1]
@@ -58,13 +58,13 @@ s.plot = split(samples, floor((rank(samples)-1)/n))
 
 for (i in seq(1,length(s.plot))) {
   bpL = ggplot(data=l.50bp.melted[l.50bp.melted$sample %in% s.plot[[i]],], aes(x=BPS, y=coverage, group=strand, colour = strand)) +
-    geom_line() + #scale_y_log10(breaks=c(10,50,100,250,500,1000,5000,10000,100000,500000)) 
-    scale_color_manual(values=c("blue","red")) + theme_bw() +  facet_grid(sample ~ ., scales = "free") + 
+    geom_line() + #scale_y_log10(breaks=c(10,50,100,250,500,1000,5000,10000,100000,500000))
+    scale_color_manual(values=c("blue","red")) + theme_bw() +  facet_grid(sample ~ ., scales = "free") +
    ggtitle("L Segment") + theme(legend.position = "bottom",legend.title=element_blank())
   bpL + ggsave(paste0(outdir,"lsegment_stranded_",paste(s.plot[[i]],sep="_",collapse="_"),".pdf"),width=8,height=8)
   bpS = ggplot(data=s.50bp.melted[s.50bp.melted$sample %in% s.plot[[i]],], aes(x=BPS, y=coverage, group=strand, colour = strand)) +
-    geom_line() + #scale_y_log10(breaks=c(10,50,100,250,500,1000,5000,10000,100000,500000)) 
-    scale_color_manual(values=c("blue","red")) + theme_bw() +  facet_grid(sample ~ ., scales = "free") + 
+    geom_line() + #scale_y_log10(breaks=c(10,50,100,250,500,1000,5000,10000,100000,500000))
+    scale_color_manual(values=c("blue","red")) + theme_bw() +  facet_grid(sample ~ ., scales = "free") +
     ggtitle("S Segment") + theme(legend.position = "bottom",legend.title=element_blank())
   bpS + ggsave(paste0(outdir,"ssegment_stranded_",paste(s.plot[[i]],sep="_",collapse="_"),".pdf"),width=8,height=8)
 }

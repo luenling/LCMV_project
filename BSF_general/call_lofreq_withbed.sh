@@ -10,7 +10,7 @@ source $(dirname $BASH_SOURCE)"/bsf_params.sh"
 
 
 LIST=$3
-if [ ! -f $LIST  ] ; then
+if [ -z $LIST  ] ; then
   ls *IDQS*.bam > bam_files.list
   LIST="bam_files.list"
 fi
