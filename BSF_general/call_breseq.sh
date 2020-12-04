@@ -24,7 +24,7 @@ while read file; do
   echo finished breseq at `date` with exit state $ES >> $LOGFILE
   echo $GDTOOLS gd2vcf -r $REFGENOME -r ${REFGENOME/%\.fasta/\.gff3} -o ${BN}.vcf output/output.gd >> $LOGFILE
   $GDTOOLS gd2vcf -r $REFGENOME -r ${REFGENOME/%\.fasta/\.gff3} -o ${BN}.vcf output/output.gd
-  awk -v OFS="\t" '/^\#\#[^I]/ {print} /^\#\#INFO/ {print $0; sub("INFO","FORMAT",$0); print $0; } /\#CH/ {print "##FORMAT=<ID=PQ,Number=1,Type=Float,Description=\"Breseq variant quality score (log10(pvariant/Pn)-log10(total length or references))\">"; print $0,"FORMAT","'$SM'"} !/^\#/ {form=$8;  gsub(/=[^A-Z]+/,":",form); gsub(/;/,":",form); sub(/:$/,"",form); sub(/INDEL:/,"",form);  samp=$8; gsub(/[A-Z4]+=/,"",samp); gsub(/;/,":",samp); sub(/INDEL:/,"",samp); print $0,form":PQ",samp":"$6}' ${BN}.vcf | sed '/ID\=[AD][DP]/ s/Float/Integer/g' | $BCFTOOLS norm -f $REFGENOME - 2>> $ERRLOG | bgzip -c > ${BN}_samp_breseq.vcf.gz
+  awk -v OFS="\t" '/^\#\#[^I]/ {print} /^\#\#INFO/ {sub("AD,Number=1","AD,Number=A",$0); print $0; sub("INFO","FORMAT",$0); print $0; } /\#CH/ {print "##FORMAT=<ID=PQ,Number=1,Type=Float,Description=\"Breseq variant quality score (log10(pvariant/Pn)-log10(total length or references))\">"; print $0,"FORMAT","'$SM'"} !/^\#/ {form=$8;  gsub(/=[^A-Z]+/,":",form); gsub(/;/,":",form); sub(/:$/,"",form); sub(/INDEL:/,"",form);  samp=$8; gsub(/[A-Z4]+=/,"",samp); gsub(/;/,":",samp); sub(/INDEL:/,"",samp); print $0,form":PQ",samp":"$6}' ${BN}.vcf | sed '/ID\=[AD][DP]/ s/Float/Integer/g' | $BCFTOOLS norm -f $REFGENOME - 2>> $ERRLOG | bgzip -c > ${BN}_samp_breseq.vcf.gz
   rm -f ${BN}_samp_breseq.vcf.gz.tbi
   tabix -p vcf ${BN}_samp_breseq.vcf.gz
   cd ..

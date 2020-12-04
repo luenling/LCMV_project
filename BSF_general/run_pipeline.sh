@@ -126,18 +126,29 @@ export RUN_ID
 # echo bash $SCRIPTS/call_vardict.sh ./bam_files.txt $RUNBASE/all_samps_samtools.vcf.gz >> $LOGFILE
 # bash $SCRIPTS/call_vardict.sh ./bam_files.txt $RUNBASE/all_samps_samtools.vcf.gz
 # cd $RUNBASE
-mkdir $RUNBASE/SNP_GENIE_VARDICT
-cd $RUNBASE/SNP_GENIE_VARDICT
-ls $RUNBASE/VARDICT/*_S*_vardict_filt_norm.vcf.gz > vcfs.lst
+# mkdir $RUNBASE/SNP_GENIE_VARDICT
+# cd $RUNBASE/SNP_GENIE_VARDICT
+# ls $RUNBASE/VARDICT/*_S*_vardict_filt_norm.vcf.gz > vcfs.lst
+# bash $SCRIPTS/run_snpgenie.sh vcfs.lst >> $RUNBASE/SNP_GENIE_VARDICT/snpgenie.log 2>> $RUNBASE/SNP_GENIE_VARDICT/snpgenie.err.log
+# cd  $RUNBASE
+mkdir $RUNBASE/SNP_GENIE_LOFREQ
+cd $RUNBASE/SNP_GENIE_LOFREQ
+ls $RUNBASE/LOFREQ2_bqsr/S*_samp.lofreq.bed.vcf.gz > vcfs.lst
 bash $SCRIPTS/run_snpgenie.sh vcfs.lst >> $RUNBASE/SNP_GENIE_VARDICT/snpgenie.log 2>> $RUNBASE/SNP_GENIE_VARDICT/snpgenie.err.log
 cd  $RUNBASE
+#
+# mkdir $RUNBASE/Qualimap
+# cd $RUNBASE/Qualimap
+# ls $RUNBASE/BQSR/*bqsr.bam | sed -E 's/(.+_)(S[0-9]+)(_.+)/\2\t\1\2\3/g;' > bam.files
+# ~/Tools/qualimap_v2.2.1/qualimap multi-bamqc -d bam.files -r -c -gff $BASEDIR/References/viruses_short.gff -outdir strand_spec_rev -outfile report_strand_spec_rev -p strand-specific-reverse -outformat PDF:HTML  >> str_spec_rev_bamqc.log  2>&1
+# mv $RUNBASE/BQSR/*_stats .
+# cd $RUNBASE/
+# mkdir $RUNBASE/BRESEQ
+# cd $RUNBASE/BRESEQ
+# bash $SCRIPTS/call_breseq.sh ../bam_list.txt 2>> breseq.log
+# cd $RUNBASE
 
-mkdir $RUNBASE/Qualimap
-cd $RUNBASE/Qualimap
-ls $RUNBASE/BQSR/*bqsr.bam | sed -E 's/(.+_)(S[0-9]+)(_.+)/\2\t\1\2\3/g;' > bam.files
-~/Tools/qualimap_v2.2.1/qualimap multi-bamqc -d bam.files -r -c -gff $BASEDIR/References/viruses_short.gff -outdir strand_spec_rev -outfile report_strand_spec_rev -p strand-specific-reverse -outformat PDF:HTML  >> str_spec_rev_bamqc.log  2>&1
-mv $RUNBASE/BQSR/*_stats .
-cd $RUNBASE/
+
 exit
 # cd $RUNBASE/BQSR
 # ls "*.bam" > bam_list.txt
