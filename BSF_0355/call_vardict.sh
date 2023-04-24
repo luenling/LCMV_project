@@ -17,7 +17,7 @@ while read file; do
   echo $VARDICT/VarDict_java -G $REFGENOME -th 20 -f 0.001 -m 10 -P 10 -B 3 -b $file -c 1 -S 2 -E 3 -z 1 $BASEDIR/References/viruses_short.bed \| $VARDICT/VarDict/teststrandbias.R \| $VARDICT/VarDict/var2vcf_valid.pl -N $SM -E -f 0.001 \| bgzip -c  \> ${BN}_vardict_filt.vcf.gz >> $LOGFILE
   $VARDICT/VarDict_java -G $REFGENOME -th 20 -f 0.001 -m 10 -P 10 -B 3 -b $file -c 1 -S 2 -E 3 -z 1 $BASEDIR/References/viruses_short.bed | $VARDICT/VarDict/teststrandbias.R | $VARDICT/VarDict/var2vcf_valid.pl -N $SM -E -f 0.001 | bgzip -c  > ${BN}_vardict_filt.vcf.gz
   ES=$?
-  echo finished lofreq at `date` with exit state $ES >> $LOGFILE
+  echo finished vardict at `date` with exit state $ES >> $LOGFILE
   echo tabix -p vcf ${BN}_vardict_filt.vcf.gz >> $LOGFILE
   tabix -p vcf ${BN}_vardict_filt.vcf.gz
   echo $BCFTOOLS norm -f $REFGENOME -m+any ${BN}_vardict_filt.vcf.gz \| $BCFTOOLS view --apply-filters "PASS" -O z - \>  ${BN}_vardict_filt_norm.vcf.gz >> $LOGFILE
