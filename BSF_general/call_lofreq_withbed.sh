@@ -6,53 +6,53 @@
 # gets two or three arguments, a bed file with positons, an vcf file done by samtools mpileup, and a list of bam files to use for lofreq. if no list given, it looks for bam files in directory or gets a file name with bam files as third argument and a bed file and calls variants with lofreq2 for specific loci
 #--------------
 
-source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
+source $(dirname $BASH_SOURCE)"/bsf_params.sh"
 
-# 
-# LIST=$3
-# if [ ! -f $LIST  ] ; then
-#   ls *IDQS*.bam > bam_files.list
-#   LIST="bam_files.list"
-# fi
-#
-#
-# while read FFN; do
-#   FN=`basename $FFN .bam`
-#   FN=${FN/_real*/}
-#   LOGFILE=${FN}.log
-#   ERRORLOG=${FN}.err.log
-#   echo "start lofreq2 at" `date` >> $LOGFILE
-#   echo $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN >> $LOGFILE
-#   $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN 2>> $ERRORLOG >> $LOGFILE
-#   ES=$?
-#   echo finished lofreq at `date` with exit state $ES >> $LOGFILE
-#   echo $LOFREQ filter -i ${FN}_lofreq_bed.vcf -o ${FN}_lofreq_bed_filter.vcf -B 30 >> $LOGFILE
-#   $LOFREQ filter -i ${FN}_lofreq_bed.vcf -o ${FN}_lofreq_bed_filter.vcf -B 30 2>> $ERRORLOG
-# done < $LIST
-#
-# for i in *_lofreq_bed_filter.vcf; do
-#   SMP=${i%_lofreq*}
-#   SMP=${SMP#BSF_[^_]*_}
-#   awk -v OFS="\t" '/^\#\#[^I]/ {print} /^\#\#INFO/ {sub("AF,Number=1","AF,Number=A",$0); print $0; sub("INFO","FORMAT",$0); print $0; print "##FORMAT=<ID=PQ,Number=1,Type=Integer,Description=\"Phred-scaled variant call P value\">" } /\#CH/ {print $0,"FORMAT","'$SMP'"} !/^\#/ {form=$8;  gsub(/=[^A-Z]+/,":",form); gsub(/;/,":",form); sub(/:$/,"",form); sub(/INDEL:/,"",form);  samp=$8; gsub(/[A-Z4]+=/,"",samp); gsub(/;/,":",samp); sub(/INDEL:/,"",samp); print $0,form":PQ",samp":"$6}' $i | bgzip -c > ${SMP}_samp.lofreq.bed.vcf.gz
-#   tabix -f -p vcf ${SMP}_samp.lofreq.bed.vcf.gz
-# done
-#
-# $BCFTOOLS merge -i "DP:sum,DP4:sum,AF:max,SB:max"  -m none -O v *_samp.lofreq.bed.vcf.gz > all_samp_bed.vcf
-#
-# DPS=$2
-#
-# if [[ -e $DPS ]];
-# then
-#   mv all_samp_bed.vcf all_samp_bed_tmp.vcf
-#   bgzip -f all_samp_bed_tmp.vcf
-#   tabix -f -p vcf all_samp_bed_tmp.vcf.gz
-#   # have to merge and unmerge entries to get DP adn AD2 for all unannotated samples and loci (else just first occurence)
-#   $BCFTOOLS annotate -a $DPS --collapse all -c "+FORMAT/DP,FORMAT/AD2:=FORMAT/AD" all_samp_bed_tmp.vcf.gz | $BCFTOOLS norm -f $REFGENOME -m+any | $BCFTOOLS norm -f $REFGENOME -m-any > all_samp_bed.vcf
-# fi
-#
-#
-# $BCFTOOLS norm -f $REFGENOME -m+any  all_samp_bed.vcf >  lofreq2_all_samp_bed_norm.vcf
-#
+
+LIST=$3
+if [ -z $LIST  ] ; then
+  ls *IDQS*.bam > bam_files.list
+  LIST="bam_files.list"
+fi
+
+
+while read FFN; do
+  FN=`basename $FFN .bam`
+  FN=${FN/_real*/}
+  LOGFILE=${FN}.log
+  ERRORLOG=${FN}.err.log
+  echo "start lofreq2 at" `date` >> $LOGFILE
+  echo $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN >> $LOGFILE
+  $LOFREQ call -f $REFGENOME --verbose -o ${FN}_lofreq_bed.vcf --bed $1 -q 20 -Q 20 -m 20 -C 75 -a 0.05 --call-indels $FFN 2>> $ERRORLOG >> $LOGFILE
+  ES=$?
+  echo finished lofreq at `date` with exit state $ES >> $LOGFILE
+  echo $LOFREQ filter -i ${FN}_lofreq_bed.vcf -o ${FN}_lofreq_bed_filter.vcf -B 30 >> $LOGFILE
+  $LOFREQ filter -i ${FN}_lofreq_bed.vcf -o ${FN}_lofreq_bed_filter.vcf -B 30 2>> $ERRORLOG
+done < $LIST
+
+for i in *_lofreq_bed_filter.vcf; do
+  SMP=${i%_lofreq*}
+  SMP=${SMP#BSF_[^_]*_}
+  awk -v OFS="\t" '/^\#\#[^I]/ {print} /^\#\#INFO/ {sub("AF,Number=1","AF,Number=A",$0); print $0; sub("INFO","FORMAT",$0); print $0; print "##FORMAT=<ID=PQ,Number=1,Type=Integer,Description=\"Phred-scaled variant call P value\">" } /\#CH/ {print $0,"FORMAT","'$SMP'"} !/^\#/ {form=$8;  gsub(/=[^A-Z]+/,":",form); gsub(/;/,":",form); sub(/:$/,"",form); sub(/INDEL:/,"",form);  samp=$8; gsub(/[A-Z4]+=/,"",samp); gsub(/;/,":",samp); sub(/INDEL:/,"",samp); print $0,form":PQ",samp":"$6}' $i | bgzip -c > ${SMP}_samp.lofreq.bed.vcf.gz
+  tabix -f -p vcf ${SMP}_samp.lofreq.bed.vcf.gz
+done
+
+$BCFTOOLS merge -i "DP:sum,DP4:sum,AF:max,SB:max"  -m none -O v *_samp.lofreq.bed.vcf.gz > all_samp_bed.vcf
+
+DPS=$2
+
+if [[ -e $DPS ]];
+then
+  mv all_samp_bed.vcf all_samp_bed_tmp.vcf
+  bgzip -f all_samp_bed_tmp.vcf
+  tabix -f -p vcf all_samp_bed_tmp.vcf.gz
+  # have to merge and unmerge entries to get DP adn AD2 for all unannotated samples and loci (else just first occurence)
+  $BCFTOOLS annotate -a $DPS --collapse all -c "+FORMAT/DP,FORMAT/AD2:=FORMAT/AD" all_samp_bed_tmp.vcf.gz | $BCFTOOLS norm -f $REFGENOME -m+any | $BCFTOOLS norm -f $REFGENOME -m-any > all_samp_bed.vcf
+fi
+
+
+$BCFTOOLS norm -f $REFGENOME -m+any  all_samp_bed.vcf >  lofreq2_all_samp_bed_norm.vcf
+
 
 
 for i in 0.1 0.05 0.01 0.001 ; do

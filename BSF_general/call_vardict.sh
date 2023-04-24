@@ -4,10 +4,12 @@
 # Time-stamp: 11/6/2017, 1:05:34 PM
 # date: 11/6/2017, 1:04:06 PM
 # takes a list of bam files and a vcf file from samtools and calls variants with VarDict and annotates missing depths from the samtools vcf
+# also can take third argument for no minimal AF for calling
 #--------------
 
-source $(dirname $BASH_SOURCE)"/bsf_0355_params.sh"
-LOGFILE=${RUN_ID}"_vardict.log"
+source $(dirname $BASH_SOURCE)"/bsf_params.sh"
+LOGFILE=$(basename $RUNBASE)"_vardict.log"
+
 
 while read file; do
   SM=$($SAMTOOLS view -H $file | grep '^@RG' | sed "s/.*SM:\([^\t]*\).*/\1/g")

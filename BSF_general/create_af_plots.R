@@ -11,7 +11,6 @@ library(gridExtra)
 library(VariantAnnotation)
 
 library(GenomicFeatures)
-basedir="~/LCMV_Data/"
 makeTxDbFromGFF(gff_virus)
 #ref_fa=FaFile(paste0(basedir,"/References/viruses_short.fasta"))
 txdb=makeTxDbFromGFF(paste0(basedir,"/References/viruses_short.gff"),format="auto",dataSource="ensemble",

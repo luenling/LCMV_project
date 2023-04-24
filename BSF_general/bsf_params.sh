@@ -3,16 +3,20 @@
 # created: 10/30/2017, 9:17:18 AM
 # Changed: Time-stamp: <10/30/2017, 9:21:31 AM>
 # Variables for scripts, looks for different users (vetgrid01 or vetlinux01)
+# set runid with export RUN_ID=0355
+# set runid with export RUN_ID=
 shopt -s extglob
 
-#if [ -z ${RUN_ID+z} ] ; do exit 10 "You must provie a value for RUN_ID, eg. export RUN_ID=0355" ; done
+if [ -z ${RUNBASE+z} ] ; then RUNBASE=`pwd` ; fi
+if [ -z ${RUN_ID+z} ] ; then RUN_ID=${RUNBASE//*_/} ; fi
+
 BASEDIR=$(dirname $BASH_SOURCE)
-BASEDIR=${BASEDIR%\/LCMV_project\/BSF_0355}
-RUN_ID=0355
+BASEDIR=${BASEDIR%\/LCMV_project\/BSF_general}
+
 
 SCRIPTS=${BASEDIR}/LCMV_project/BSF_general/
 REFGENOME=$BASEDIR/References/viruses_short.fasta
-REFGENOME_FULL=$BASEDIR/References/viruses_short_Mus_musculus.GRCm38.fa.gz
+REFGENOME_FULL=$BASEDIR/References/viruses_short_Mus_musculus.GRCm38.dna.toplevel.fa.gz
 PRIMERS=$BASEDIR/References/primers.fna
 
 # setup everything for vetgrid01
@@ -47,8 +51,8 @@ if [ $USER == "vetgrid01" ]; then
   # VPHASER2
   VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt.py
   #BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
-  CONDAPATH=
-
+  #CONDAPATH=
+  QUALIMAP=$BASEDIR/Tools/qualimap_v2.2.1/qualimap
 elif [ $USER == "vetlinux01" ] ; then
   # general tools
   PICARD=/home/vetlinux01/.linuxbrew/Cellar/picard-tools/2.12.1/share/java/picard.jar
@@ -80,6 +84,7 @@ elif [ $USER == "vetlinux01" ] ; then
   VPHASER2=$BASEDIR/Tools/viral-ngs/intrahost_alt.py
   BAMTOOLS23=$BASEDIR/Tools/viral-ngs/tools/tools/binaries/V-Phaser-2.0/bamtools-2.3.0/lib
   CONDAPATH=/Volumes/Temp/Lukas/miniconda/bin
+  QUALIMAP=$BASEDIR/Tools/qualimap_v2.2.1/qualimap
 
 fi
 
