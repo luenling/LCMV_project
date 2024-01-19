@@ -13,7 +13,7 @@ import os
 import argparse
 import gzip
 import json
-import string
+#import string
 
 parser = argparse.ArgumentParser(description="""takes a VCF file and gives the reverse complement (for SNPgenie) to STDOUT   
 """)
@@ -30,7 +30,7 @@ args = parser.parse_args()
 chromlen=json.loads(vars(args)['chromlen'])
 vcf_file = vars(args)['vcffile']
 snpgenie = vars(args)['snpgenie']
-revtab=string.maketrans("ACTG","TGAC")
+revtab=str.maketrans("ACTG","TGAC")
 rev_cols = False # reverse ACTG columns in SNPgenie site output
 slid_win = False # reverse last site column coordinates in snpgenie sliding window for codon output
 # open vcf file
@@ -48,7 +48,7 @@ else:
 for line in inf:
     line = line.rstrip()
     if (re.match("^\s*\#+",line)): # entry is comment/header
-        print line
+        print(line)
         continue
     if (re.match("^\s*file",line) and snpgenie != False): # entry is snpgenie header
         entries = line.split("\t")
@@ -56,7 +56,7 @@ for line in inf:
             rev_cols = True
         if ( re.match("last",entries[4])):
             slid_win = True
-        print line
+        print(line)
         continue
     entries = line.split("\t")
     if (snpgenie == False):
@@ -76,7 +76,7 @@ for line in inf:
         entries[3] = entries[3].translate(revtab)[::-1]
         alts = entries[4].split(",")
         entries[4] = ",".join([ x.translate(revtab)[::-1] for x in alts])
-    print "\t".join(entries)
+    print("\t".join(entries))
 
     
     
